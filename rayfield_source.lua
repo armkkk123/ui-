@@ -3611,20 +3611,21 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 	Main.Size = useMobileSizing and UDim2.new(0, 500, 0, 275) or UDim2.new(0, 500, 0, 475)
 	
-	-- [🌊 BEAUTIFUL UIGRADIENT INJECTION]
+	-- [🌊 BEAUTIFUL UIGRADIENT INJECTION] (Disabled per user request)
+	--[[
 	local uiGradient = Instance.new("UIGradient")
 	uiGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(44, 78, 122)), -- Bright deep top
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 25, 45))  -- Dark cinematic abyss bottom
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(44, 78, 122)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 25, 45))
 	})
-	uiGradient.Rotation = 45 -- Diagonal angle
+	uiGradient.Rotation = 45
 	uiGradient.Parent = Main
-	-- [🌊 END INJECTION]
 	
 	Main.BackgroundTransparency = 0
 	if Main:FindFirstChild("Shadow") and Main.Shadow:FindFirstChild("Image") then
 		Main.Shadow.Image.ImageTransparency = 0.6
 	end
+	]]
 
 	Topbar.Visible = true
 	Topbar.BackgroundTransparency = 0
@@ -4142,3 +4143,4 @@ task.delay(4, function()
 end)
 
 return RayfieldLibrary
+
