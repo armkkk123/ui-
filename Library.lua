@@ -586,20 +586,66 @@ function Library:CreateWindow(config)
         return btn, setGlyphColor
     end
 
-    -- Settings: Roblox asset icon (same hitbox size as other chrome buttons)
-    local SettingsBtn, setSettingsGlyphColor
-    SettingsBtn, setSettingsGlyphColor = makeChromeIconBtn(-88, function(btn, color)
-        local icon = Library:Create("ImageLabel", {
+    -- Settings: Roblox asset icon + soft glow (brighter than other chrome icons)
+    local SettingsBtn
+    local settingsIcon, settingsGlow
+    SettingsBtn = makeChromeIconBtn(-88, function(btn, _color)
+        settingsGlow = Library:Create("ImageLabel", {
+            Name                   = "SettingsGlow",
+            Size                   = UDim2.new(0, 26, 0, 26),
+            Position               = UDim2.new(0.5, -13, 0.5, -13),
+            BackgroundTransparency = 1,
+            Image                  = "rbxassetid://108218465401763",
+            ImageColor3            = Color3.fromRGB(180, 230, 255),
+            ImageTransparency      = 0.55,
+            ScaleType              = Enum.ScaleType.Fit,
+            ZIndex                 = 4,
+            Parent                 = btn,
+        })
+        settingsIcon = Library:Create("ImageLabel", {
+            Name                   = "SettingsIcon",
             Size                   = UDim2.new(0, 20, 0, 20),
             Position               = UDim2.new(0.5, -10, 0.5, -10),
             BackgroundTransparency = 1,
             Image                  = "rbxassetid://108218465401763",
-            ImageColor3            = color,
+            ImageColor3            = Color3.fromRGB(245, 250, 255),
+            ImageTransparency      = 0,
             ScaleType              = Enum.ScaleType.Fit,
             ZIndex                 = 5,
             Parent                 = btn,
         })
-        return { icon }
+        return {}
+    end)
+
+    local function setSettingsIconLook(mode)
+        if not settingsIcon or not settingsGlow then
+            return
+        end
+        if mode == "open" then
+            settingsIcon.ImageColor3 = Library.Theme.AccentHover
+            settingsIcon.ImageTransparency = 0
+            settingsGlow.ImageColor3 = Library.Theme.Accent
+            settingsGlow.ImageTransparency = 0.35
+        elseif mode == "hover" then
+            settingsIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+            settingsIcon.ImageTransparency = 0
+            settingsGlow.ImageColor3 = Library.Theme.AccentHover
+            settingsGlow.ImageTransparency = 0.4
+        else
+            settingsIcon.ImageColor3 = Color3.fromRGB(235, 245, 255)
+            settingsIcon.ImageTransparency = 0
+            settingsGlow.ImageColor3 = Color3.fromRGB(140, 210, 255)
+            settingsGlow.ImageTransparency = 0.5
+        end
+    end
+
+    setSettingsIconLook("idle")
+
+    SettingsBtn.MouseEnter:Connect(function()
+        setSettingsIconLook(Library.SettingsOpen and "open" or "hover")
+    end)
+    SettingsBtn.MouseLeave:Connect(function()
+        setSettingsIconLook(Library.SettingsOpen and "open" or "idle")
     end)
 
     -- Minimize: clean horizontal dash
@@ -664,18 +710,6 @@ function Library:CreateWindow(config)
     end)
     CloseBtn.MouseButton1Click:Connect(function()
         Library:Destroy()
-    end)
-
-    -- Settings hover: accent when open / idle
-    SettingsBtn.MouseEnter:Connect(function()
-        setSettingsGlyphColor(Library.Theme.Accent)
-    end)
-    SettingsBtn.MouseLeave:Connect(function()
-        if Library.SettingsOpen then
-            setSettingsGlyphColor(Library.Theme.Accent)
-        else
-            setSettingsGlyphColor(Library.Theme.TextSub)
-        end
     end)
 
     -- Restore Window on Floating Button Click
@@ -1213,7 +1247,7 @@ function Library:CreateWindow(config)
     local function setSettingsOpen(open)
         Library.SettingsOpen = open
         SettingsPanel.Visible = open
-        setSettingsGlyphColor(open and Library.Theme.Accent or Library.Theme.TextSub)
+        setSettingsIconLook(open and "open" or "idle")
     end
 
     SettingsBtn.MouseButton1Click:Connect(function()
