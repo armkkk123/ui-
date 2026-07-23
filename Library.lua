@@ -1,33 +1,8 @@
 --[[
     ╔══════════════════════════════════════════════════════════════╗
-    ║            CUSTOM EXECUTOR GUI LIBRARY v2.0                  ║
+    ║            CUSTOM EXECUTOR GUI LIBRARY v2.1                  ║
     ║         Production-grade UI Library for Roblox               ║
     ╚══════════════════════════════════════════════════════════════╝
-    
-    API Reference:
-        Library:CreateWindow(config)
-        Library:Notify(data)
-        Library:Destroy()
-        Library:SetTheme(themeTable)
-        Library:SaveConfiguration(name)
-        Library:LoadConfiguration(name)
-        
-        Window:CreateTab(name, icon)
-        Tab:CreateSection(text)
-        Tab:CreateLabel(text)
-        Tab:CreateButton(options)
-        Tab:CreateToggle(options)
-        Tab:CreateSlider(options)
-        Tab:CreateDropdown(options)
-        Tab:CreateInput(options)
-        Tab:CreateNumberAdjust(options)
-        Tab:CreateKeybind(options)
-        Tab:CreateColorPicker(options)
-        Tab:CreateParagraph(options)
-        
-        Element.Set(value)
-        Element.GetValue()
-        Dropdown.Refresh(newList)
 ]]
 
 -- ============================================================
@@ -43,10 +18,10 @@ local CoreGui           = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
 -- ============================================================
--- [2] LIBRARY CORE
+-- [2] LIBRARY CORE & THEME
 -- ============================================================
 local Library = {
-    Version     = "2.0.0",
+    Version     = "2.1.0",
     Flags       = {},
     Elements    = {},
     Connections = {},
@@ -55,23 +30,24 @@ local Library = {
 
     Theme = {
         MainBg        = Color3.fromRGB(14, 14, 19),
-        TopBarBg      = Color3.fromRGB(20, 20, 28),
-        SideBarBg     = Color3.fromRGB(10, 10, 14),
+        TopBarBg      = Color3.fromRGB(18, 18, 24),
+        SideBarBg     = Color3.fromRGB(11, 11, 15),
         CardBg        = Color3.fromRGB(22, 22, 30),
-        InputBg       = Color3.fromRGB(28, 28, 38),
+        CardHoverBg   = Color3.fromRGB(28, 28, 38),
+        InputBg       = Color3.fromRGB(26, 26, 36),
         DropdownBg    = Color3.fromRGB(18, 18, 25),
-        Accent        = Color3.fromRGB(0, 175, 255),
-        AccentDark    = Color3.fromRGB(0, 115, 210),
-        AccentHover   = Color3.fromRGB(40, 195, 255),
-        Success       = Color3.fromRGB(34, 150, 70),
-        SuccessHover  = Color3.fromRGB(45, 180, 85),
+        Accent        = Color3.fromRGB(0, 170, 255),
+        AccentDark    = Color3.fromRGB(0, 110, 200),
+        AccentHover   = Color3.fromRGB(40, 190, 255),
+        Success       = Color3.fromRGB(28, 28, 38),
+        SuccessHover  = Color3.fromRGB(36, 36, 48),
         Danger        = Color3.fromRGB(220, 65, 65),
         Text          = Color3.fromRGB(245, 245, 250),
-        TextDim       = Color3.fromRGB(180, 180, 195),
-        TextSub       = Color3.fromRGB(120, 120, 130),
-        Stroke        = Color3.fromRGB(42, 42, 54),
-        StrokeLight   = Color3.fromRGB(65, 65, 82),
-        ToggleOff     = Color3.fromRGB(50, 50, 62),
+        TextDim       = Color3.fromRGB(175, 175, 190),
+        TextSub       = Color3.fromRGB(130, 130, 142),
+        Stroke        = Color3.fromRGB(38, 38, 50),
+        StrokeLight   = Color3.fromRGB(60, 60, 78),
+        ToggleOff     = Color3.fromRGB(48, 48, 60),
         NotifyBg      = Color3.fromRGB(22, 22, 32),
     }
 }
@@ -80,7 +56,6 @@ local Library = {
 -- [3] UTILITIES
 -- ============================================================
 do
-    -- Safe Instance creator
     function Library:Create(className, props)
         local ok, inst = pcall(Instance.new, className)
         if not ok then return nil end
@@ -90,14 +65,12 @@ do
         return inst
     end
 
-    -- Track connections for cleanup
     function Library:Connect(signal, fn)
         local conn = signal:Connect(fn)
         table.insert(Library.Connections, conn)
         return conn
     end
 
-    -- Tween shortcut
     function Library:Tween(inst, props, t, style, dir)
         t = t or 0.2
         style = style or Enum.EasingStyle.Quart
@@ -105,7 +78,6 @@ do
         return TweenService:Create(inst, TweenInfo.new(t, style, dir), props)
     end
 
-    -- Override theme colors
     function Library:SetTheme(themeOverride)
         for k, v in pairs(themeOverride) do
             if Library.Theme[k] ~= nil then
@@ -114,7 +86,18 @@ do
         end
     end
 
-    -- Draggable (with screen-clamping)
+    function Library:AddCardHover(container, stroke)
+        if not container or not stroke then return end
+        container.MouseEnter:Connect(function()
+            Library:Tween(stroke, {Color = Library.Theme.StrokeLight}, 0.15):Play()
+            Library:Tween(container, {BackgroundColor3 = Library.Theme.CardHoverBg}, 0.15):Play()
+        end)
+        container.MouseLeave:Connect(function()
+            Library:Tween(stroke, {Color = Library.Theme.Stroke}, 0.15):Play()
+            Library:Tween(container, {BackgroundColor3 = Library.Theme.CardBg}, 0.15):Play()
+        end)
+    end
+
     function Library:MakeDraggable(handle, target)
         local dragging, dragStart, startPos = false, nil, nil
 
@@ -134,7 +117,6 @@ do
             local newX  = startPos.X.Offset + delta.X
             local newY  = startPos.Y.Offset + delta.Y
 
-            -- Clamp to screen bounds
             local vp    = workspace.CurrentCamera.ViewportSize
             local sizeX = target.Size.X.Offset
             local sizeY = target.Size.Y.Offset
@@ -154,19 +136,6 @@ do
         Library:Connect(UserInputService.InputChanged, onInputChanged)
         Library:Connect(UserInputService.InputEnded,   onInputEnded)
     end
-
-    -- Card hover lighting animation helper
-    function Library:AddCardHover(container, stroke)
-        if not container or not stroke then return end
-        container.MouseEnter:Connect(function()
-            Library:Tween(stroke, {Color = Library.Theme.StrokeLight}, 0.15):Play()
-            Library:Tween(container, {BackgroundColor3 = Color3.fromRGB(26, 26, 36)}, 0.15):Play()
-        end)
-        container.MouseLeave:Connect(function()
-            Library:Tween(stroke, {Color = Library.Theme.Stroke}, 0.15):Play()
-            Library:Tween(container, {BackgroundColor3 = Library.Theme.CardBg}, 0.15):Play()
-        end)
-    end
 end
 
 -- ============================================================
@@ -174,7 +143,6 @@ end
 -- ============================================================
 local UI_NAME = "CustomGuiLib_v2"
 
--- Remove existing GUI if loaded before
 local existing = CoreGui:FindFirstChild(UI_NAME)
 if existing then existing:Destroy() end
 if LocalPlayer and LocalPlayer.PlayerGui:FindFirstChild(UI_NAME) then
@@ -225,7 +193,7 @@ do
         local note = Library:Create("Frame", {
             Size                = UDim2.new(1, 0, 0, 64),
             BackgroundColor3    = Library.Theme.NotifyBg,
-            BackgroundTransparency = 0.08,
+            BackgroundTransparency = 0.05,
             BorderSizePixel     = 0,
             ClipsDescendants    = true,
             Parent              = notifyContainer,
@@ -233,7 +201,6 @@ do
         Library:Create("UICorner",  {CornerRadius = UDim.new(0, 8), Parent = note})
         Library:Create("UIStroke",  {Color = Library.Theme.Accent, Thickness = 1.2, Parent = note})
 
-        -- Accent bar on left
         Library:Create("Frame", {
             Size             = UDim2.new(0, 3, 1, 0),
             BackgroundColor3 = Library.Theme.Accent,
@@ -267,7 +234,6 @@ do
             Parent              = note,
         })
 
-        -- Slide in
         note.Position = UDim2.new(1.1, 0, 0, 0)
         Library:Tween(note, {Position = UDim2.new(0, 0, 0, 0)}, 0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
         notifyVisible = notifyVisible + 1
@@ -278,7 +244,6 @@ do
             note:Destroy()
             notifyVisible = notifyVisible - 1
 
-            -- Process queue
             if #notifyQueue > 0 and notifyVisible < MAX_VISIBLE then
                 local next = table.remove(notifyQueue, 1)
                 ShowNotify(next)
@@ -370,9 +335,9 @@ function Library:CreateWindow(config)
     config = config or {}
 
     local windowTitle  = config.Title      or "Custom Hub"
-    local windowSize   = config.Size       or UDim2.new(0, 540, 0, 360)
-    local toggleIcon   = config.ToggleIcon or "rbxthumb://type=Asset&id=8829255607&w=150&h=150"
-    -- Auto-responsive window size calculation for Mobile & Tablet viewports
+    local windowSize   = config.Size       or UDim2.new(0, 560, 0, 380)
+    local toggleIcon   = config.ToggleIcon or "rbxassetid://101260008442128"
+
     local vp           = workspace.CurrentCamera.ViewportSize
     local targetWidth  = math.min(windowSize.X.Offset, math.max(300, vp.X - 24))
     local targetHeight = math.min(windowSize.Y.Offset, math.max(260, vp.Y - 24))
@@ -381,21 +346,22 @@ function Library:CreateWindow(config)
     local startX       = math.max(10, (vp.X - targetWidth) / 2)
     local startY       = math.max(10, (vp.Y - targetHeight) / 2)
 
-    -- ── Floating Toggle Button ────────────────────────────────
+    -- ── Floating Toggle Button (Hidden initially, visible when minimized) ──
     local openBtn = Library:Create("Frame", {
         Name             = "OpenBtn",
-        Size             = UDim2.new(0, 46, 0, 46),
+        Size             = UDim2.new(0, 44, 0, 44),
         Position         = UDim2.new(0, 20, 0.15, 0),
         BackgroundColor3 = Library.Theme.TopBarBg,
         BorderSizePixel  = 0,
         Active           = true,
+        Visible          = false,
         Parent           = ScreenGui,
     })
     Library:Create("UICorner",  {CornerRadius = UDim.new(1, 0), Parent = openBtn})
     Library:Create("UIStroke",  {Color = Library.Theme.StrokeLight, Thickness = 1.5, Parent = openBtn})
     Library:Create("ImageLabel", {
-        Size                   = UDim2.new(0, 30, 0, 30),
-        Position               = UDim2.new(0.5, -15, 0.5, -15),
+        Size                   = UDim2.new(0, 26, 0, 26),
+        Position               = UDim2.new(0.5, -13, 0.5, -13),
         BackgroundTransparency = 1,
         Image                  = toggleIcon,
         Parent                 = openBtn,
@@ -424,24 +390,6 @@ function Library:CreateWindow(config)
     Library:Create("UICorner", {CornerRadius = UDim.new(0, 10), Parent = MainFrame})
     Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1.5, Parent = MainFrame})
 
-    -- Glowing top accent gradient line
-    local topGradientLine = Library:Create("Frame", {
-        Size             = UDim2.new(1, 0, 0, 2),
-        Position         = UDim2.new(0, 0, 0, 0),
-        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-        BorderSizePixel  = 0,
-        ZIndex           = 10,
-        Parent           = MainFrame,
-    })
-    Library:Create("UIGradient", {
-        Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 190, 255)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 90, 255)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 190, 255)),
-        },
-        Parent = topGradientLine,
-    })
-
     -- ── TopBar ────────────────────────────────────────────────
     local TopBar = Library:Create("Frame", {
         Name             = "TopBar",
@@ -452,7 +400,6 @@ function Library:CreateWindow(config)
         Parent           = MainFrame,
     })
     Library:Create("UICorner", {CornerRadius = UDim.new(0, 10), Parent = TopBar})
-    -- Cover bottom-round corners of TopBar
     Library:Create("Frame", {
         Size             = UDim2.new(1, 0, 0, 10),
         Position         = UDim2.new(0, 0, 1, -10),
@@ -464,20 +411,18 @@ function Library:CreateWindow(config)
 
     Library:MakeDraggable(TopBar, MainFrame)
 
-    -- Logo accent dot
-    Library:Create("Frame", {
-        Size             = UDim2.new(0, 6, 0, 6),
-        Position         = UDim2.new(0, 12, 0.5, -3),
-        BackgroundColor3 = Library.Theme.Accent,
-        BorderSizePixel  = 0,
-        ZIndex           = 3,
-        Parent           = TopBar,
+    Library:Create("ImageLabel", {
+        Size                   = UDim2.new(0, 20, 0, 20),
+        Position               = UDim2.new(0, 14, 0.5, -10),
+        BackgroundTransparency = 1,
+        Image                  = "rbxassetid://101260008442128",
+        ZIndex                 = 3,
+        Parent                 = TopBar,
     })
-    Library:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = TopBar:FindFirstChildWhichIsA("Frame")})
 
     Library:Create("TextLabel", {
-        Size               = UDim2.new(1, -60, 1, 0),
-        Position           = UDim2.new(0, 26, 0, 0),
+        Size               = UDim2.new(1, -95, 1, 0),
+        Position           = UDim2.new(0, 42, 0, 0),
         BackgroundTransparency = 1,
         Font               = Enum.Font.GothamBold,
         TextSize           = 13,
@@ -488,34 +433,54 @@ function Library:CreateWindow(config)
         Parent             = TopBar,
     })
 
-    -- Close button
-    local CloseBtn = Library:Create("TextButton", {
-        Size               = UDim2.new(0, 28, 0, 28),
-        Position           = UDim2.new(1, -34, 0.5, -14),
-        BackgroundColor3   = Library.Theme.Danger,
+    -- ── Minimize Button (Minus: Hide window & Show floating button) ──
+    local MinBtn = Library:Create("TextButton", {
+        Size               = UDim2.new(0, 26, 0, 26),
+        Position           = UDim2.new(1, -56, 0.5, -13),
         BackgroundTransparency = 1,
         Font               = Enum.Font.GothamBold,
         TextSize           = 14,
         TextColor3         = Library.Theme.TextSub,
-        Text               = "✕",
+        Text               = "-",
         ZIndex             = 4,
         Parent             = TopBar,
     })
-    Library:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = CloseBtn})
+
+    MinBtn.MouseEnter:Connect(function()
+        Library:Tween(MinBtn, {TextColor3 = Library.Theme.Text}, 0.15):Play()
+    end)
+    MinBtn.MouseLeave:Connect(function()
+        Library:Tween(MinBtn, {TextColor3 = Library.Theme.TextSub}, 0.15):Play()
+    end)
+    MinBtn.MouseButton1Click:Connect(function()
+        MainFrame.Visible = false
+        openBtn.Visible   = true
+    end)
+
+    -- ── Close Button (Cross: Disappear completely) ─────────────
+    local CloseBtn = Library:Create("TextButton", {
+        Size               = UDim2.new(0, 26, 0, 26),
+        Position           = UDim2.new(1, -26, 0.5, -13),
+        BackgroundTransparency = 1,
+        Font               = Enum.Font.GothamBold,
+        TextSize           = 14,
+        TextColor3         = Library.Theme.TextSub,
+        Text               = "X",
+        ZIndex             = 4,
+        Parent             = TopBar,
+    })
 
     CloseBtn.MouseEnter:Connect(function()
-        CloseBtn.BackgroundTransparency = 0
-        CloseBtn.TextColor3 = Library.Theme.Text
+        Library:Tween(CloseBtn, {TextColor3 = Library.Theme.Danger}, 0.15):Play()
     end)
     CloseBtn.MouseLeave:Connect(function()
-        CloseBtn.BackgroundTransparency = 1
-        CloseBtn.TextColor3 = Library.Theme.TextSub
+        Library:Tween(CloseBtn, {TextColor3 = Library.Theme.TextSub}, 0.15):Play()
     end)
     CloseBtn.MouseButton1Click:Connect(function()
-        MainFrame.Visible = false
+        Library:Destroy()
     end)
 
-    -- Toggle visibility via OpenBtn (distinguish click vs drag)
+    -- Restore Window on Floating Button Click
     local clickStart
     openClickBtn.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
@@ -525,7 +490,8 @@ function Library:CreateWindow(config)
     openClickBtn.InputEnded:Connect(function(i)
         if (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) then
             if clickStart and (i.Position - clickStart).Magnitude < 8 then
-                MainFrame.Visible = not MainFrame.Visible
+                MainFrame.Visible = true
+                openBtn.Visible   = false
             end
         end
     end)
@@ -533,7 +499,7 @@ function Library:CreateWindow(config)
     -- ── Sidebar ───────────────────────────────────────────────
     local SideBar = Library:Create("Frame", {
         Name             = "SideBar",
-        Size             = UDim2.new(0, 140, 1, -48),
+        Size             = UDim2.new(0, 138, 1, -48),
         Position         = UDim2.new(0, 6, 0, 43),
         BackgroundColor3 = Library.Theme.SideBarBg,
         BorderSizePixel  = 0,
@@ -541,7 +507,7 @@ function Library:CreateWindow(config)
         Parent           = MainFrame,
     })
     Library:Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = SideBar})
-    Library:Create("UIStroke", {Color = Color3.fromRGB(22, 22, 28), Thickness = 1, Parent = SideBar})
+    Library:Create("UIStroke", {Color = Color3.fromRGB(24, 24, 32), Thickness = 1, Parent = SideBar})
 
     local SideScroll = Library:Create("ScrollingFrame", {
         Size                  = UDim2.new(1, 0, 1, 0),
@@ -569,13 +535,12 @@ function Library:CreateWindow(config)
     -- ── Content Area ──────────────────────────────────────────
     local ContentArea = Library:Create("Frame", {
         Name             = "ContentArea",
-        Size             = UDim2.new(1, -158, 1, -48),
-        Position         = UDim2.new(0, 152, 0, 43),
+        Size             = UDim2.new(1, -156, 1, -48),
+        Position         = UDim2.new(0, 150, 0, 43),
         BackgroundTransparency = 1,
         Parent           = MainFrame,
     })
 
-    -- ── Window Object ─────────────────────────────────────────
     local Window = {Tabs = {}, ActiveTab = nil}
 
     -- ============================================================
@@ -584,7 +549,6 @@ function Library:CreateWindow(config)
     function Window:CreateTab(tabName, tabIcon)
         tabName = tabName or "Tab"
 
-        -- Content page (scrollable)
         local TabPage = Library:Create("ScrollingFrame", {
             Name                   = tabName .. "_Page",
             Size                   = UDim2.new(1, 0, 1, 0),
@@ -610,12 +574,11 @@ function Library:CreateWindow(config)
             Parent        = TabPage,
         })
 
-        -- Sidebar Tab Button
         local TabBtn = Library:Create("TextButton", {
             Name             = tabName .. "_Btn",
             Size             = UDim2.new(1, 0, 0, 34),
-            BackgroundColor3 = Color3.fromRGB(14, 14, 18),
-            Font             = Enum.Font.Gotham,
+            BackgroundColor3 = Color3.fromRGB(15, 15, 20),
+            Font             = Enum.Font.GothamMedium,
             TextSize         = 11,
             TextColor3       = Library.Theme.TextSub,
             Text             = (tabIcon and tabIcon .. "  " or "") .. tabName,
@@ -624,12 +587,11 @@ function Library:CreateWindow(config)
         })
         Library:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = TabBtn})
         local tabStroke = Library:Create("UIStroke", {
-            Color     = Color3.fromRGB(20, 20, 24),
+            Color     = Color3.fromRGB(24, 24, 32),
             Thickness = 1,
             Parent    = TabBtn,
         })
 
-        -- Accent indicator bar (left edge)
         local tabAccent = Library:Create("Frame", {
             Size             = UDim2.new(0, 3, 0.6, 0),
             Position         = UDim2.new(0, 0, 0.2, 0),
@@ -645,17 +607,16 @@ function Library:CreateWindow(config)
         local function SelectTab()
             for _, t in ipairs(Window.Tabs) do
                 t.Page.Visible = false
-                Library:Tween(t.Button, {BackgroundColor3 = Color3.fromRGB(14, 14, 18)}, 0.15):Play()
-                t.Button.Font = Enum.Font.Gotham
+                Library:Tween(t.Button, {BackgroundColor3 = Color3.fromRGB(15, 15, 20)}, 0.15):Play()
+                t.Button.Font = Enum.Font.GothamMedium
                 t.Button.TextColor3 = Library.Theme.TextSub
-                tabStroke.Color = Color3.fromRGB(20, 20, 24)
-                -- Hide accent on all tabs
+                t.Button.UIStroke.Color = Color3.fromRGB(24, 24, 32)
                 local acc = t.Button:FindFirstChild("Frame")
                 if acc then acc.Visible = false end
             end
 
             TabPage.Visible = true
-            Library:Tween(TabBtn, {BackgroundColor3 = Color3.fromRGB(22, 22, 30)}, 0.15):Play()
+            Library:Tween(TabBtn, {BackgroundColor3 = Color3.fromRGB(26, 26, 36)}, 0.15):Play()
             TabBtn.Font = Enum.Font.GothamBold
             TabBtn.TextColor3 = Library.Theme.Text
             tabStroke.Color = Library.Theme.StrokeLight
@@ -666,12 +627,12 @@ function Library:CreateWindow(config)
         TabBtn.MouseButton1Click:Connect(SelectTab)
         TabBtn.MouseEnter:Connect(function()
             if Window.ActiveTab ~= Tab then
-                Library:Tween(TabBtn, {BackgroundColor3 = Color3.fromRGB(18, 18, 24)}, 0.1):Play()
+                Library:Tween(TabBtn, {BackgroundColor3 = Color3.fromRGB(20, 20, 28)}, 0.1):Play()
             end
         end)
         TabBtn.MouseLeave:Connect(function()
             if Window.ActiveTab ~= Tab then
-                Library:Tween(TabBtn, {BackgroundColor3 = Color3.fromRGB(14, 14, 18)}, 0.1):Play()
+                Library:Tween(TabBtn, {BackgroundColor3 = Color3.fromRGB(15, 15, 20)}, 0.1):Play()
             end
         end)
 
@@ -682,27 +643,30 @@ function Library:CreateWindow(config)
         -- [9] COMPONENT BUILDERS
         -- ============================================================
         do
-            -- ── Section ──────────────────────────────────────────────
+            -- ── Section Header ───────────────────────────────────────
             function Tab:CreateSection(text)
                 local frame = Library:Create("Frame", {
-                    Size             = UDim2.new(1, 0, 0, 28),
+                    Size             = UDim2.new(1, 0, 0, 24),
                     BackgroundTransparency = 1,
                     Parent           = TabPage,
                 })
-                -- Separator line
+
+                -- Left accent bar
                 Library:Create("Frame", {
-                    Size             = UDim2.new(1, 0, 0, 1),
-                    Position         = UDim2.new(0, 0, 1, -1),
-                    BackgroundColor3 = Library.Theme.Stroke,
+                    Size             = UDim2.new(0, 3, 0, 12),
+                    Position         = UDim2.new(0, 0, 0.5, -6),
+                    BackgroundColor3 = Library.Theme.Accent,
                     BorderSizePixel  = 0,
                     Parent           = frame,
                 })
+
                 Library:Create("TextLabel", {
-                    Size               = UDim2.new(1, 0, 1, -4),
+                    Size               = UDim2.new(1, -10, 1, 0),
+                    Position           = UDim2.new(0, 8, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamBold,
-                    TextSize           = 10,
-                    TextColor3         = Library.Theme.Accent,
+                    TextSize           = 11,
+                    TextColor3         = Color3.fromRGB(150, 150, 165),
                     Text               = string.upper(text),
                     TextXAlignment     = Enum.TextXAlignment.Left,
                     Parent             = frame,
@@ -767,6 +731,12 @@ function Library:CreateWindow(config)
                     Parent           = container,
                 })
                 Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = btn})
+                local btnStroke = Library:Create("UIStroke", {
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    Color = Library.Theme.Stroke,
+                    Thickness = 1,
+                    Parent = btn
+                })
 
                 if desc then
                     btn.Size = UDim2.new(1, 0, 0, 28)
@@ -784,13 +754,19 @@ function Library:CreateWindow(config)
                     })
                 end
 
-                btn.MouseEnter:Connect(function()    Library:Tween(btn, {BackgroundColor3 = Library.Theme.SuccessHover}, 0.15):Play() end)
-                btn.MouseLeave:Connect(function()    Library:Tween(btn, {BackgroundColor3 = Library.Theme.Success}, 0.15):Play() end)
+                btn.MouseEnter:Connect(function()
+                    Library:Tween(btn, {BackgroundColor3 = Library.Theme.SuccessHover}, 0.15):Play()
+                    Library:Tween(btnStroke, {Color = Library.Theme.Accent}, 0.15):Play()
+                end)
+                btn.MouseLeave:Connect(function()
+                    Library:Tween(btn, {BackgroundColor3 = Library.Theme.Success}, 0.15):Play()
+                    Library:Tween(btnStroke, {Color = Library.Theme.Stroke}, 0.15):Play()
+                end)
                 btn.MouseButton1Down:Connect(function()
-                    Library:Tween(btn, {BackgroundColor3 = Library.Theme.AccentDark, Size = UDim2.new(1, -4, 1, -4), Position = UDim2.new(0, 2, 0, 2)}, 0.06):Play()
+                    Library:Tween(btn, {Size = UDim2.new(1, -4, 1, -4), Position = UDim2.new(0, 2, 0, 2)}, 0.06):Play()
                 end)
                 btn.MouseButton1Up:Connect(function()
-                    Library:Tween(btn, {BackgroundColor3 = Library.Theme.SuccessHover, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0)}, 0.1):Play()
+                    Library:Tween(btn, {Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0)}, 0.1):Play()
                 end)
                 btn.MouseButton1Click:Connect(function() pcall(callback) end)
 
@@ -873,7 +849,6 @@ function Library:CreateWindow(config)
                     local targetPos   = state and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
                     local targetColor = state and Library.Theme.Accent or Library.Theme.ToggleOff
 
-                    -- Knob squeeze animation
                     Library:Tween(knob, {Size = UDim2.new(0, 14, 0, 18)}, 0.07):Play()
                     task.delay(0.07, function()
                         Library:Tween(knob, {Size = UDim2.new(0, 18, 0, 18), Position = targetPos}, 0.2, Enum.EasingStyle.Back):Play()
@@ -965,15 +940,7 @@ function Library:CreateWindow(config)
                     Parent           = barBg,
                 })
                 Library:Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = barFill})
-                Library:Create("UIGradient", {
-                    Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Library.Theme.Accent),
-                        ColorSequenceKeypoint.new(1, Library.Theme.AccentHover),
-                    },
-                    Parent = barFill,
-                })
 
-                -- Knob handle
                 local knob = Library:Create("Frame", {
                     Size             = UDim2.new(0, 14, 0, 14),
                     Position         = UDim2.new(rel0, -7, 0.5, -7),
@@ -1045,7 +1012,7 @@ function Library:CreateWindow(config)
                 local default   = options.Default  or optList[1] or ""
                 local flag      = options.Flag
                 local callback  = options.Callback or function() end
-                local maxHeight = options.MaxHeight or 160  -- max dropdown list height
+                local maxHeight = options.MaxHeight or 160
 
                 local container = Library:Create("Frame", {
                     Size             = UDim2.new(1, 0, 0, 36),
@@ -1104,7 +1071,6 @@ function Library:CreateWindow(config)
                     Parent             = mainBg,
                 })
 
-                -- Dropdown list panel
                 local listPanel = Library:Create("Frame", {
                     Size             = UDim2.new(1, 0, 0, 0),
                     Position         = UDim2.new(0, 0, 0, 38),
@@ -1281,7 +1247,8 @@ function Library:CreateWindow(config)
                     Parent           = TabPage,
                 })
                 Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = container})
-                Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = container})
+                local containerStroke = Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = container})
+                Library:AddCardHover(container, containerStroke)
 
                 Library:Create("TextLabel", {
                     Size               = UDim2.new(0.45, 0, 1, 0),
@@ -1295,7 +1262,11 @@ function Library:CreateWindow(config)
                     Parent             = container,
                 })
 
-                local inputStroke = Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1})
+                local inputStroke = Library:Create("UIStroke", {
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    Color = Library.Theme.Stroke, 
+                    Thickness = 1
+                })
 
                 local box = Library:Create("TextBox", {
                     Size                   = UDim2.new(0.5, -4, 0, 24),
@@ -1314,7 +1285,6 @@ function Library:CreateWindow(config)
                 Library:Create("UICorner", {CornerRadius = UDim.new(0, 5), Parent = box})
                 inputStroke.Parent = box
 
-                -- Numeric filter
                 if numeric then
                     box:GetPropertyChangedSignal("Text"):Connect(function()
                         local filtered = box.Text:gsub("[^%d%.%-]", "")
@@ -1347,7 +1317,7 @@ function Library:CreateWindow(config)
                 return elem
             end
 
-            -- ── Number Adjuster ───────────────────────────────────────
+            -- ── Number Adjuster (Minus Left, Value Center, Plus Right) ──
             function Tab:CreateNumberAdjust(options)
                 options = options or {}
                 local labelText = options.Name     or "Adjuster"
@@ -1365,11 +1335,11 @@ function Library:CreateWindow(config)
                     Parent           = TabPage,
                 })
                 Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = container})
-                local stroke = Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = container})
-                Library:AddCardHover(container, stroke)
+                local containerStroke = Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = container})
+                Library:AddCardHover(container, containerStroke)
 
                 Library:Create("TextLabel", {
-                    Size               = UDim2.new(1, -130, 1, 0),
+                    Size               = UDim2.new(1, -125, 1, 0),
                     Position           = UDim2.new(0, 10, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamSemibold,
@@ -1383,15 +1353,24 @@ function Library:CreateWindow(config)
                 local val = math.clamp(default, minVal, maxVal)
                 if flag then Library.Flags[flag] = val end
 
+                -- Control box containing [ - ] [ Value ] [ + ]
+                local ctrlFrame = Library:Create("Frame", {
+                    Size             = UDim2.new(0, 106, 0, 26),
+                    Position         = UDim2.new(1, -112, 0.5, -13),
+                    BackgroundTransparency = 1,
+                    Parent           = container,
+                })
+
                 local valLbl = Library:Create("TextLabel", {
-                    Size               = UDim2.new(0, 46, 0, 24),
-                    Position           = UDim2.new(1, -86, 0.5, -12),
+                    Size               = UDim2.new(0, 54, 1, 0),
+                    Position           = UDim2.new(0, 26, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamBold,
                     TextSize           = 12,
                     TextColor3         = Library.Theme.Text,
                     Text               = tostring(val),
-                    Parent             = container,
+                    TextXAlignment     = Enum.TextXAlignment.Center,
+                    Parent             = ctrlFrame,
                 })
 
                 local function Update(newVal)
@@ -1403,7 +1382,7 @@ function Library:CreateWindow(config)
 
                 local function MakeBtn(txt, pos, delta)
                     local btn = Library:Create("TextButton", {
-                        Size             = UDim2.new(0, 26, 0, 26),
+                        Size             = UDim2.new(0, 26, 1, 0),
                         Position         = pos,
                         BackgroundColor3 = Library.Theme.InputBg,
                         Font             = Enum.Font.GothamBold,
@@ -1411,7 +1390,7 @@ function Library:CreateWindow(config)
                         TextColor3       = Library.Theme.Text,
                         Text             = txt,
                         BorderSizePixel  = 0,
-                        Parent           = container,
+                        Parent           = ctrlFrame,
                     })
                     Library:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = btn})
                     Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = btn})
@@ -1427,7 +1406,6 @@ function Library:CreateWindow(config)
 
                     btn.MouseButton1Click:Connect(function() Update(val + delta) end)
 
-                    -- Hold-to-repeat
                     local holding = false
                     btn.MouseButton1Down:Connect(function()
                         holding = true
@@ -1442,8 +1420,8 @@ function Library:CreateWindow(config)
                     btn.MouseLeave:Connect(function() holding = false end)
                 end
 
-                MakeBtn("−", UDim2.new(1, -60, 0.5, -13), -step)
-                MakeBtn("+", UDim2.new(1, -30, 0.5, -13), step)
+                MakeBtn("−", UDim2.new(0, 0, 0, 0), -step)
+                MakeBtn("+", UDim2.new(0, 80, 0, 0), step)
 
                 local elem = {
                     Set      = function(v) Update(v) end,
@@ -1468,7 +1446,8 @@ function Library:CreateWindow(config)
                     Parent           = TabPage,
                 })
                 Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = container})
-                Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = container})
+                local containerStroke = Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = container})
+                Library:AddCardHover(container, containerStroke)
 
                 Library:Create("TextLabel", {
                     Size               = UDim2.new(1, -120, 1, 0),
@@ -1485,7 +1464,11 @@ function Library:CreateWindow(config)
                 local currentKey = default
                 if flag then Library.Flags[flag] = currentKey end
 
-                local kbStroke = Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1})
+                local kbStroke = Library:Create("UIStroke", {
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    Color = Library.Theme.Stroke, 
+                    Thickness = 1
+                })
                 local keyBtn = Library:Create("TextButton", {
                     Size             = UDim2.new(0, 100, 0, 24),
                     Position         = UDim2.new(1, -108, 0.5, -12),
@@ -1511,12 +1494,13 @@ function Library:CreateWindow(config)
 
                 Library:Connect(UserInputService.InputBegan, function(input, gp)
                     if binding then
-                        if input.KeyCode == Enum.KeyCode.Escape then
-                            -- Cancel binding
+                        if input.KeyCode == Enum.KeyCode.Escape or input.KeyCode == Enum.KeyCode.Backspace then
                             binding = false
-                            keyBtn.Text = "[" .. currentKey.Name .. "]"
+                            currentKey = Enum.KeyCode.Unknown
+                            keyBtn.Text = "[None]"
                             keyBtn.TextColor3 = Library.Theme.Accent
                             Library:Tween(kbStroke, {Color = Library.Theme.Stroke}, 0.15):Play()
+                            if flag then Library.Flags[flag] = currentKey end
                         elseif input.UserInputType == Enum.UserInputType.Keyboard then
                             binding = false
                             currentKey = input.KeyCode
@@ -1525,7 +1509,7 @@ function Library:CreateWindow(config)
                             Library:Tween(kbStroke, {Color = Library.Theme.Stroke}, 0.15):Play()
                             if flag then Library.Flags[flag] = currentKey end
                         end
-                    elseif not gp and input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == currentKey then
+                    elseif not gp and input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == currentKey and currentKey ~= Enum.KeyCode.Unknown then
                         pcall(callback, currentKey)
                     end
                 end)
@@ -1542,7 +1526,7 @@ function Library:CreateWindow(config)
                 return elem
             end
 
-            -- ── Color Picker (RGB Sliders) ─────────────────────────────
+            -- ── Color Picker (2D Saturation/Value Canvas + Rainbow Hue Slider) ──
             function Tab:CreateColorPicker(options)
                 options = options or {}
                 local labelText   = options.Name     or "Color Picker"
@@ -1550,7 +1534,7 @@ function Library:CreateWindow(config)
                 local flag        = options.Flag
                 local callback    = options.Callback or function() end
 
-                local r, g, b = math.round(default.R * 255), math.round(default.G * 255), math.round(default.B * 255)
+                local h, s, v     = default:ToHSV()
 
                 local container = Library:Create("Frame", {
                     Size             = UDim2.new(1, 0, 0, 34),
@@ -1560,7 +1544,8 @@ function Library:CreateWindow(config)
                     Parent           = TabPage,
                 })
                 Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = container})
-                Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = container})
+                local containerStroke = Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = container})
+                Library:AddCardHover(container, containerStroke)
 
                 Library:Create("TextLabel", {
                     Size               = UDim2.new(1, -60, 0, 34),
@@ -1586,149 +1571,179 @@ function Library:CreateWindow(config)
                 Library:Create("UICorner", {CornerRadius = UDim.new(0, 5), Parent = swatch})
                 Library:Create("UIStroke", {Color = Library.Theme.StrokeLight, Thickness = 1, Parent = swatch})
 
-                -- RGB sliders panel (hidden by default)
+                -- 2D Color Picker Panel (Expandable)
                 local panel = Library:Create("Frame", {
-                    Size             = UDim2.new(1, 0, 0, 90),
-                    Position         = UDim2.new(0, 0, 0, 34),
+                    Size             = UDim2.new(1, -20, 0, 130),
+                    Position         = UDim2.new(0, 10, 0, 34),
                     BackgroundTransparency = 1,
                     Parent           = container,
                 })
-                Library:Create("UIPadding", {
-                    PaddingLeft  = UDim.new(0, 10),
-                    PaddingRight = UDim.new(0, 10),
-                    Parent       = panel,
+
+                -- 2D Saturation / Value Box
+                local svFrame = Library:Create("Frame", {
+                    Size             = UDim2.new(1, 0, 0, 100),
+                    Position         = UDim2.new(0, 0, 0, 0),
+                    BackgroundColor3 = Color3.fromHSV(h, 1, 1),
+                    BorderSizePixel  = 0,
+                    Parent           = panel,
                 })
-                Library:Create("UIListLayout", {
-                    Padding   = UDim.new(0, 4),
-                    SortOrder = Enum.SortOrder.LayoutOrder,
-                    Parent    = panel,
+                Library:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = svFrame})
+
+                -- White gradient (Saturation: Left White -> Right Transparent)
+                local satGrad = Library:Create("Frame", {
+                    Size             = UDim2.new(1, 0, 1, 0),
+                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                    BorderSizePixel  = 0,
+                    Parent           = svFrame,
                 })
+                Library:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = satGrad})
+                Library:Create("UIGradient", {
+                    Transparency = NumberSequence.new{
+                        NumberSequenceKeypoint.new(0, 0),
+                        NumberSequenceKeypoint.new(1, 1)
+                    },
+                    Parent = satGrad,
+                })
+
+                -- Black gradient (Value: Top Transparent -> Bottom Black)
+                local valGrad = Library:Create("Frame", {
+                    Size             = UDim2.new(1, 0, 1, 0),
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+                    BorderSizePixel  = 0,
+                    Parent           = svFrame,
+                })
+                Library:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = valGrad})
+                Library:Create("UIGradient", {
+                    Rotation     = 90,
+                    Transparency = NumberSequence.new{
+                        NumberSequenceKeypoint.new(0, 1),
+                        NumberSequenceKeypoint.new(1, 0)
+                    },
+                    Parent = valGrad,
+                })
+
+                -- 2D Picker RingCursor
+                local pickerRing = Library:Create("Frame", {
+                    Size             = UDim2.new(0, 12, 0, 12),
+                    Position         = UDim2.new(s, -6, 1 - v, -6),
+                    BackgroundTransparency = 1,
+                    ZIndex           = 3,
+                    Parent           = svFrame,
+                })
+                Library:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = pickerRing})
+                Library:Create("UIStroke", {Color = Color3.fromRGB(255, 255, 255), Thickness = 2, Parent = pickerRing})
+
+                -- Rainbow Hue Slider Bar
+                local hueFrame = Library:Create("Frame", {
+                    Size             = UDim2.new(1, 0, 0, 14),
+                    Position         = UDim2.new(0, 0, 0, 108),
+                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                    BorderSizePixel  = 0,
+                    Parent           = panel,
+                })
+                Library:Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = hueFrame})
+                Library:Create("UIGradient", {
+                    Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0,     Color3.fromRGB(255, 0, 0)),
+                        ColorSequenceKeypoint.new(0.167, Color3.fromRGB(255, 255, 0)),
+                        ColorSequenceKeypoint.new(0.333, Color3.fromRGB(0, 255, 0)),
+                        ColorSequenceKeypoint.new(0.5,   Color3.fromRGB(0, 255, 255)),
+                        ColorSequenceKeypoint.new(0.667, Color3.fromRGB(0, 0, 255)),
+                        ColorSequenceKeypoint.new(0.833, Color3.fromRGB(255, 0, 255)),
+                        ColorSequenceKeypoint.new(1,     Color3.fromRGB(255, 0, 0))
+                    },
+                    Parent = hueFrame,
+                })
+
+                -- Hue Slider Knob
+                local hueKnob = Library:Create("Frame", {
+                    Size             = UDim2.new(0, 10, 0, 18),
+                    Position         = UDim2.new(h, -5, 0.5, -9),
+                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                    BorderSizePixel  = 0,
+                    ZIndex           = 3,
+                    Parent           = hueFrame,
+                })
+                Library:Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = hueKnob})
+                Library:Create("UIStroke", {Color = Color3.fromRGB(30, 30, 40), Thickness = 1, Parent = hueKnob})
 
                 local currentColor = default
                 if flag then Library.Flags[flag] = currentColor end
 
                 local function UpdateColor()
-                    currentColor = Color3.fromRGB(r, g, b)
-                    Library:Tween(swatch, {BackgroundColor3 = currentColor}, 0.12):Play()
+                    currentColor = Color3.fromHSV(h, s, v)
+                    swatch.BackgroundColor3 = currentColor
+                    svFrame.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
                     if flag then Library.Flags[flag] = currentColor end
                     pcall(callback, currentColor)
                 end
 
-                local function MakeRGBSlider(lbl, colorChar, getVal, setVal, accentColor)
-                    local row = Library:Create("Frame", {
-                        Size             = UDim2.new(1, 0, 0, 22),
-                        BackgroundTransparency = 1,
-                        Parent           = panel,
-                    })
-
-                    Library:Create("TextLabel", {
-                        Size               = UDim2.new(0, 14, 1, 0),
-                        BackgroundTransparency = 1,
-                        Font               = Enum.Font.GothamBold,
-                        TextSize           = 10,
-                        TextColor3         = accentColor,
-                        Text               = lbl,
-                        Parent             = row,
-                    })
-
-                    local track = Library:Create("Frame", {
-                        Size             = UDim2.new(1, -52, 0, 6),
-                        Position         = UDim2.new(0, 18, 0.5, -3),
-                        BackgroundColor3 = Library.Theme.InputBg,
-                        BorderSizePixel  = 0,
-                        Parent           = row,
-                    })
-                    Library:Create("UICorner", {CornerRadius = UDim.new(0, 3), Parent = track})
-
-                    local fill = Library:Create("Frame", {
-                        Size             = UDim2.new(getVal() / 255, 0, 1, 0),
-                        BackgroundColor3 = accentColor,
-                        BorderSizePixel  = 0,
-                        Parent           = track,
-                    })
-                    Library:Create("UICorner", {CornerRadius = UDim.new(0, 3), Parent = fill})
-
-                    local knob = Library:Create("Frame", {
-                        Size             = UDim2.new(0, 10, 0, 10),
-                        Position         = UDim2.new(getVal() / 255, -5, 0.5, -5),
-                        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                        BorderSizePixel  = 0,
-                        ZIndex           = 2,
-                        Parent           = track,
-                    })
-                    Library:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = knob})
-
-                    local valLbl = Library:Create("TextLabel", {
-                        Size               = UDim2.new(0, 30, 1, 0),
-                        Position           = UDim2.new(1, -30, 0, 0),
-                        BackgroundTransparency = 1,
-                        Font               = Enum.Font.GothamBold,
-                        TextSize           = 10,
-                        TextColor3         = Library.Theme.TextDim,
-                        Text               = tostring(getVal()),
-                        Parent             = row,
-                    })
-
-                    local function UpdateTrack(pos)
-                        local relX = math.clamp((pos.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
-                        local newVal = math.round(relX * 255)
-                        setVal(newVal)
-                        fill.Size  = UDim2.new(relX, 0, 1, 0)
-                        knob.Position = UDim2.new(relX, -5, 0.5, -5)
-                        valLbl.Text = tostring(newVal)
-                        UpdateColor()
-                    end
-
-                    local drag = false
-                    track.InputBegan:Connect(function(i)
-                        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-                            drag = true
-                            UpdateTrack(i.Position)
-                        end
-                    end)
-                    Library:Connect(UserInputService.InputChanged, function(i)
-                        if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-                            UpdateTrack(i.Position)
-                        end
-                    end)
-                    Library:Connect(UserInputService.InputEnded, function(i)
-                        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-                            drag = false
-                        end
-                    end)
-
-                    return fill, knob, valLbl
+                -- Drag 2D SV Box
+                local svDragging = false
+                local function UpdateSV(pos)
+                    local relX = math.clamp((pos.X - svFrame.AbsolutePosition.X) / svFrame.AbsoluteSize.X, 0, 1)
+                    local relY = math.clamp((pos.Y - svFrame.AbsolutePosition.Y) / svFrame.AbsoluteSize.Y, 0, 1)
+                    s = relX
+                    v = 1 - relY
+                    pickerRing.Position = UDim2.new(s, -6, 1 - v, -6)
+                    UpdateColor()
                 end
 
-                local rFill, rKnob, rLbl = MakeRGBSlider("R", "r", function() return r end, function(v) r = v end, Color3.fromRGB(255, 80, 80))
-                local gFill, gKnob, gLbl = MakeRGBSlider("G", "g", function() return g end, function(v) g = v end, Color3.fromRGB(80, 200, 80))
-                local bFill, bKnob, bLbl = MakeRGBSlider("B", "b", function() return b end, function(v) b = v end, Color3.fromRGB(80, 140, 255))
+                svFrame.InputBegan:Connect(function(i)
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                        svDragging = true
+                        UpdateSV(i.Position)
+                    end
+                end)
+                Library:Connect(UserInputService.InputChanged, function(i)
+                    if svDragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+                        UpdateSV(i.Position)
+                    end
+                end)
+                Library:Connect(UserInputService.InputEnded, function(i)
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                        svDragging = false
+                    end
+                end)
+
+                -- Drag Hue Slider
+                local hueDragging = false
+                local function UpdateHue(pos)
+                    local relX = math.clamp((pos.X - hueFrame.AbsolutePosition.X) / hueFrame.AbsoluteSize.X, 0, 1)
+                    h = relX
+                    hueKnob.Position = UDim2.new(h, -5, 0.5, -9)
+                    UpdateColor()
+                end
+
+                hueFrame.InputBegan:Connect(function(i)
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                        hueDragging = true
+                        UpdateHue(i.Position)
+                    end
+                end)
+                Library:Connect(UserInputService.InputChanged, function(i)
+                    if hueDragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+                        UpdateHue(i.Position)
+                    end
+                end)
+                Library:Connect(UserInputService.InputEnded, function(i)
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                        hueDragging = false
+                    end
+                end)
 
                 local expanded = false
                 swatch.MouseButton1Click:Connect(function()
                     expanded = not expanded
-                    local targetH = expanded and 124 or 34
+                    local targetH = expanded and 172 or 34
                     Library:Tween(container, {Size = UDim2.new(1, 0, 0, targetH)}, 0.25, Enum.EasingStyle.Quart):Play()
                 end)
 
-                local function RefreshTracks()
-                    local function update(fill, knob, lbl, val)
-                        local rel = val / 255
-                        fill.Size     = UDim2.new(rel, 0, 1, 0)
-                        knob.Position = UDim2.new(rel, -5, 0.5, -5)
-                        lbl.Text      = tostring(val)
-                    end
-                    update(rFill, rKnob, rLbl, r)
-                    update(gFill, gKnob, gLbl, g)
-                    update(bFill, bKnob, bLbl, b)
-                end
-
                 local elem = {
                     Set = function(col)
-                        r = math.round(col.R * 255)
-                        g = math.round(col.G * 255)
-                        b = math.round(col.B * 255)
-                        RefreshTracks()
+                        h, s, v = col:ToHSV()
+                        pickerRing.Position = UDim2.new(s, -6, 1 - v, -6)
+                        hueKnob.Position    = UDim2.new(h, -5, 0.5, -9)
                         UpdateColor()
                     end,
                     GetValue = function() return currentColor end,
