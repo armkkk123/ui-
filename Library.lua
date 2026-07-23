@@ -1,6 +1,6 @@
 --[[
     ╔══════════════════════════════════════════════════════════════╗
-    ║            CUSTOM EXECUTOR GUI LIBRARY v2.1                  ║
+    ║            CUSTOM EXECUTOR GUI LIBRARY v2.2                  ║
     ║         Production-grade UI Library for Roblox               ║
     ╚══════════════════════════════════════════════════════════════╝
 ]]
@@ -42,7 +42,7 @@ end
 -- [2] LIBRARY CORE & THEME
 -- ============================================================
 local Library = {
-    Version     = "2.1.1",
+    Version     = "2.2.0",
     Flags       = {},
     Elements    = {},
     Connections = {},
@@ -70,8 +70,20 @@ local Library = {
         StrokeLight   = Color3.fromRGB(60, 60, 78),
         ToggleOff     = Color3.fromRGB(48, 48, 60),
         NotifyBg      = Color3.fromRGB(22, 22, 32),
-    }
+    },
+
+    -- ค่าเริ่มต้นของธีม (สำเนาตอนโหลด — ใช้ Reset)
+    DefaultTheme = nil,
+    ToggleKey    = Enum.KeyCode.RightControl,
+    SettingsOpen = false,
 }
+
+do
+    Library.DefaultTheme = {}
+    for k, v in pairs(Library.Theme) do
+        Library.DefaultTheme[k] = v
+    end
+end
 
 -- ============================================================
 -- [3] UTILITIES
@@ -99,12 +111,74 @@ do
         return TweenService:Create(inst, TweenInfo.new(t, style, dir), props)
     end
 
+    function Library:SnapshotTheme()
+        local snap = {}
+        for k, v in pairs(Library.Theme) do
+            snap[k] = v
+        end
+        return snap
+    end
+
+    -- เปลี่ยนสีทั้ง GUI ตามค่าเก่า→ใหม่ (อัปเดตสด)
+    function Library:ApplyThemeLive(oldTheme)
+        if not Library.ScreenGui then
+            return
+        end
+        oldTheme = oldTheme or {}
+        for _, d in ipairs(Library.ScreenGui:GetDescendants()) do
+            pcall(function()
+                if d:IsA("GuiObject") then
+                    for key, oldC in pairs(oldTheme) do
+                        local newC = Library.Theme[key]
+                        if newC and d.BackgroundColor3 == oldC then
+                            d.BackgroundColor3 = newC
+                        end
+                    end
+                end
+                if d:IsA("TextLabel") or d:IsA("TextButton") or d:IsA("TextBox") then
+                    for key, oldC in pairs(oldTheme) do
+                        local newC = Library.Theme[key]
+                        if newC and d.TextColor3 == oldC then
+                            d.TextColor3 = newC
+                        end
+                    end
+                end
+                if d:IsA("UIStroke") then
+                    for key, oldC in pairs(oldTheme) do
+                        local newC = Library.Theme[key]
+                        if newC and d.Color == oldC then
+                            d.Color = newC
+                        end
+                    end
+                end
+                if d:IsA("ScrollingFrame") then
+                    for key, oldC in pairs(oldTheme) do
+                        local newC = Library.Theme[key]
+                        if newC and d.ScrollBarImageColor3 == oldC then
+                            d.ScrollBarImageColor3 = newC
+                        end
+                    end
+                end
+            end)
+        end
+    end
+
     function Library:SetTheme(themeOverride)
-        for k, v in pairs(themeOverride) do
-            if Library.Theme[k] ~= nil then
+        local old = Library:SnapshotTheme()
+        for k, v in pairs(themeOverride or {}) do
+            if Library.Theme[k] ~= nil and typeof(v) == "Color3" then
                 Library.Theme[k] = v
             end
         end
+        Library:ApplyThemeLive(old)
+    end
+
+    function Library:ResetTheme()
+        local old = Library:SnapshotTheme()
+        for k, v in pairs(Library.DefaultTheme) do
+            Library.Theme[k] = v
+        end
+        Library:ApplyThemeLive(old)
     end
 
     function Library:AddCardHover(container, stroke)
@@ -460,7 +534,7 @@ function Library:CreateWindow(config)
     })
 
     Library:Create("TextLabel", {
-        Size               = UDim2.new(1, -95, 1, 0),
+        Size               = UDim2.new(1, -128, 1, 0),
         Position           = UDim2.new(0, 42, 0, 0),
         BackgroundTransparency = 1,
         Font               = Enum.Font.GothamBold,
@@ -472,7 +546,19 @@ function Library:CreateWindow(config)
         Parent             = TopBar,
     })
 
-    -- ── Minimize Button (Minus: Hide window & Show floating button) ──
+    -- ── Settings Button (ไอคอนซ้ายของย่อหน้าต่าง) ──────────────
+    local SettingsBtn = Library:Create("ImageButton", {
+        Name                   = "SettingsBtn",
+        Size                   = UDim2.new(0, 22, 0, 22),
+        Position               = UDim2.new(1, -86, 0.5, -11),
+        BackgroundTransparency = 1,
+        Image                  = "rbxassetid://128130547397394",
+        ImageColor3            = Library.Theme.TextSub,
+        ZIndex                 = 4,
+        Parent                 = TopBar,
+    })
+
+    -- ── Minimize Button ───────────────────────────────────────
     local MinBtn = Library:Create("TextButton", {
         Size               = UDim2.new(0, 26, 0, 26),
         Position           = UDim2.new(1, -56, 0.5, -13),
@@ -494,9 +580,10 @@ function Library:CreateWindow(config)
     MinBtn.MouseButton1Click:Connect(function()
         MainFrame.Visible = false
         openBtn.Visible   = true
+        Library.SettingsOpen = false
     end)
 
-    -- ── Close Button (Cross: Disappear completely) ─────────────
+    -- ── Close Button ──────────────────────────────────────────
     local CloseBtn = Library:Create("TextButton", {
         Size               = UDim2.new(0, 26, 0, 26),
         Position           = UDim2.new(1, -26, 0.5, -13),
@@ -519,6 +606,15 @@ function Library:CreateWindow(config)
         Library:Destroy()
     end)
 
+    SettingsBtn.MouseEnter:Connect(function()
+        Library:Tween(SettingsBtn, {ImageColor3 = Library.Theme.Accent}, 0.15):Play()
+    end)
+    SettingsBtn.MouseLeave:Connect(function()
+        if not Library.SettingsOpen then
+            Library:Tween(SettingsBtn, {ImageColor3 = Library.Theme.TextSub}, 0.15):Play()
+        end
+    end)
+
     -- Restore Window on Floating Button Click
     local clickStart
     openClickBtn.InputBegan:Connect(function(i)
@@ -533,6 +629,409 @@ function Library:CreateWindow(config)
                 openBtn.Visible   = false
             end
         end
+    end)
+
+    -- ── Settings Panel ────────────────────────────────────────
+    local settingsBinding = false
+    local SettingsPanel = Library:Create("Frame", {
+        Name             = "SettingsPanel",
+        Size             = UDim2.new(1, -12, 1, -54),
+        Position         = UDim2.new(0, 6, 0, 49),
+        BackgroundColor3 = Library.Theme.MainBg,
+        BorderSizePixel  = 0,
+        Visible          = false,
+        ZIndex           = 50,
+        ClipsDescendants = true,
+        Parent           = MainFrame,
+    })
+    Library:Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = SettingsPanel})
+    Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = SettingsPanel})
+
+    local settingsHeader = Library:Create("Frame", {
+        Size             = UDim2.new(1, 0, 0, 40),
+        BackgroundColor3 = Library.Theme.TopBarBg,
+        BorderSizePixel  = 0,
+        ZIndex           = 51,
+        Parent           = SettingsPanel,
+    })
+    Library:Create("TextLabel", {
+        Size               = UDim2.new(1, -50, 1, 0),
+        Position           = UDim2.new(0, 14, 0, 0),
+        BackgroundTransparency = 1,
+        Font               = Enum.Font.GothamBold,
+        TextSize           = 15,
+        TextColor3         = Library.Theme.Text,
+        Text               = "Settings",
+        TextXAlignment     = Enum.TextXAlignment.Left,
+        ZIndex             = 52,
+        Parent             = settingsHeader,
+    })
+    local settingsClose = Library:Create("TextButton", {
+        Size               = UDim2.new(0, 30, 0, 30),
+        Position           = UDim2.new(1, -34, 0.5, -15),
+        BackgroundTransparency = 1,
+        Font               = Enum.Font.GothamBold,
+        TextSize           = 16,
+        TextColor3         = Library.Theme.TextSub,
+        Text               = "X",
+        ZIndex             = 52,
+        Parent             = settingsHeader,
+    })
+
+    local settingsScroll = Library:Create("ScrollingFrame", {
+        Size                   = UDim2.new(1, -16, 1, -52),
+        Position               = UDim2.new(0, 8, 0, 44),
+        BackgroundTransparency = 1,
+        BorderSizePixel        = 0,
+        ScrollBarThickness     = 4,
+        ScrollBarImageColor3   = Library.Theme.StrokeLight,
+        CanvasSize             = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize    = Enum.AutomaticSize.Y,
+        ZIndex                 = 51,
+        Parent                 = SettingsPanel,
+    })
+    Library:Create("UIListLayout", {
+        Padding   = UDim.new(0, 8),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent    = settingsScroll,
+    })
+    Library:Create("UIPadding", {
+        PaddingTop    = UDim.new(0, 4),
+        PaddingBottom = UDim.new(0, 12),
+        PaddingLeft   = UDim.new(0, 4),
+        PaddingRight  = UDim.new(0, 8),
+        Parent        = settingsScroll,
+    })
+
+    local function settingsSection(title)
+        local f = Library:Create("Frame", {
+            Size             = UDim2.new(1, 0, 0, 22),
+            BackgroundTransparency = 1,
+            ZIndex           = 52,
+            Parent           = settingsScroll,
+        })
+        Library:Create("TextLabel", {
+            Size               = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Font               = Enum.Font.GothamBold,
+            TextSize           = 12,
+            TextColor3         = Library.Theme.Accent,
+            Text               = string.upper(title),
+            TextXAlignment     = Enum.TextXAlignment.Left,
+            ZIndex             = 53,
+            Parent             = f,
+        })
+        return f
+    end
+
+    settingsSection("Hotkeys")
+
+    local keyRow = Library:Create("Frame", {
+        Size             = UDim2.new(1, 0, 0, 40),
+        BackgroundColor3 = Library.Theme.CardBg,
+        BorderSizePixel  = 0,
+        ZIndex           = 52,
+        Parent           = settingsScroll,
+    })
+    Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = keyRow})
+    Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = keyRow})
+    Library:Create("TextLabel", {
+        Size               = UDim2.new(1, -120, 1, 0),
+        Position           = UDim2.new(0, 12, 0, 0),
+        BackgroundTransparency = 1,
+        Font               = Enum.Font.GothamSemibold,
+        TextSize           = 13,
+        TextColor3         = Library.Theme.TextDim,
+        Text               = "Toggle GUI Key",
+        TextXAlignment     = Enum.TextXAlignment.Left,
+        ZIndex             = 53,
+        Parent             = keyRow,
+    })
+    local keyBindBtn = Library:Create("TextButton", {
+        Size             = UDim2.new(0, 100, 0, 26),
+        Position         = UDim2.new(1, -110, 0.5, -13),
+        BackgroundColor3 = Library.Theme.InputBg,
+        Font             = Enum.Font.GothamBold,
+        TextSize         = 12,
+        TextColor3       = Library.Theme.Accent,
+        Text             = "[" .. Library.ToggleKey.Name .. "]",
+        BorderSizePixel  = 0,
+        ZIndex           = 53,
+        Parent           = keyRow,
+    })
+    Library:Create("UICorner", {CornerRadius = UDim.new(0, 5), Parent = keyBindBtn})
+    local keyBindStroke = Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = keyBindBtn})
+
+    keyBindBtn.MouseButton1Click:Connect(function()
+        settingsBinding = true
+        keyBindBtn.Text = "[ ... ]"
+        keyBindBtn.TextColor3 = Color3.fromRGB(255, 210, 50)
+        Library:Tween(keyBindStroke, {Color = Color3.fromRGB(255, 210, 50)}, 0.15):Play()
+    end)
+
+    Library:Connect(UserInputService.InputBegan, function(input, gp)
+        if settingsBinding then
+            if input.KeyCode == Enum.KeyCode.Escape then
+                settingsBinding = false
+                keyBindBtn.Text = "[" .. Library.ToggleKey.Name .. "]"
+                keyBindBtn.TextColor3 = Library.Theme.Accent
+                Library:Tween(keyBindStroke, {Color = Library.Theme.Stroke}, 0.15):Play()
+            elseif input.UserInputType == Enum.UserInputType.Keyboard then
+                settingsBinding = false
+                Library.ToggleKey = input.KeyCode
+                keyBindBtn.Text = "[" .. Library.ToggleKey.Name .. "]"
+                keyBindBtn.TextColor3 = Library.Theme.Accent
+                Library:Tween(keyBindStroke, {Color = Library.Theme.Stroke}, 0.15):Play()
+                Library:Notify({
+                    Title = "Hotkey Set",
+                    Content = "Toggle GUI: " .. Library.ToggleKey.Name,
+                    Duration = 2,
+                })
+            end
+            return
+        end
+
+        if gp or Library.Unloaded then
+            return
+        end
+        if input.UserInputType == Enum.UserInputType.Keyboard
+            and input.KeyCode == Library.ToggleKey
+            and Library.ToggleKey ~= Enum.KeyCode.Unknown then
+            if MainFrame.Visible then
+                MainFrame.Visible = false
+                openBtn.Visible = true
+                SettingsPanel.Visible = false
+                Library.SettingsOpen = false
+            else
+                MainFrame.Visible = true
+                openBtn.Visible = false
+            end
+        end
+    end)
+
+    settingsSection("Theme Colors")
+
+    local THEME_ROWS = {
+        { Key = "MainBg",      Label = "พื้นหลังหลัก (Main)" },
+        { Key = "TopBarBg",    Label = "แถบบน (TopBar)" },
+        { Key = "SideBarBg",   Label = "แถบข้าง (SideBar)" },
+        { Key = "CardBg",      Label = "การ์ด (Card)" },
+        { Key = "CardHoverBg", Label = "การ์ด Hover" },
+        { Key = "InputBg",     Label = "พื้นปุ่ม/ช่องกรอก" },
+        { Key = "DropdownBg",  Label = "Dropdown" },
+        { Key = "Accent",      Label = "สีเน้น (Accent)" },
+        { Key = "AccentDark",  Label = "Accent Dark" },
+        { Key = "AccentHover", Label = "Accent Hover" },
+        { Key = "Success",     Label = "สีปุ่มสำเร็จ" },
+        { Key = "SuccessHover",Label = "Success Hover" },
+        { Key = "Danger",      Label = "สีอันตราย" },
+        { Key = "Text",        Label = "สีข้อความหลัก" },
+        { Key = "TextDim",     Label = "สีข้อความรอง" },
+        { Key = "TextSub",     Label = "สีข้อความจาง" },
+        { Key = "Stroke",      Label = "เส้นขอบ" },
+        { Key = "StrokeLight", Label = "เส้นขอบสว่าง" },
+        { Key = "ToggleOff",   Label = "Toggle Off" },
+        { Key = "NotifyBg",    Label = "พื้น Notify" },
+    }
+
+    local colorSwatches = {}
+
+    local function makeColorRow(info)
+        local row = Library:Create("Frame", {
+            Size             = UDim2.new(1, 0, 0, 40),
+            BackgroundColor3 = Library.Theme.CardBg,
+            BorderSizePixel  = 0,
+            ClipsDescendants = true,
+            ZIndex           = 52,
+            Parent           = settingsScroll,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = row})
+        Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = row})
+
+        Library:Create("TextLabel", {
+            Size               = UDim2.new(1, -58, 0, 38),
+            Position           = UDim2.new(0, 12, 0, 0),
+            BackgroundTransparency = 1,
+            Font               = Enum.Font.GothamSemibold,
+            TextSize           = 12,
+            TextColor3         = Library.Theme.TextDim,
+            Text               = info.Label,
+            TextXAlignment     = Enum.TextXAlignment.Left,
+            TextTruncate       = Enum.TextTruncate.AtEnd,
+            ZIndex             = 53,
+            Parent             = row,
+        })
+
+        local swatch = Library:Create("TextButton", {
+            Size             = UDim2.new(0, 36, 0, 22),
+            Position         = UDim2.new(1, -46, 0, 9),
+            BackgroundColor3 = Library.Theme[info.Key],
+            Text             = "",
+            BorderSizePixel  = 0,
+            ZIndex           = 53,
+            Parent           = row,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(0, 5), Parent = swatch})
+        Library:Create("UIStroke", {Color = Library.Theme.StrokeLight, Thickness = 1, Parent = swatch})
+        colorSwatches[info.Key] = swatch
+
+        local editor = Library:Create("Frame", {
+            Size             = UDim2.new(1, -16, 0, 78),
+            Position         = UDim2.new(0, 8, 0, 40),
+            BackgroundTransparency = 1,
+            Visible          = false,
+            ZIndex           = 53,
+            Parent           = row,
+        })
+
+        local function makeChannel(name, y, getComp, setComp)
+            Library:Create("TextLabel", {
+                Size               = UDim2.new(0, 18, 0, 18),
+                Position           = UDim2.new(0, 0, 0, y),
+                BackgroundTransparency = 1,
+                Font               = Enum.Font.GothamBold,
+                TextSize           = 11,
+                TextColor3         = Library.Theme.TextSub,
+                Text               = name,
+                ZIndex             = 54,
+                Parent             = editor,
+            })
+            local track = Library:Create("Frame", {
+                Size             = UDim2.new(1, -70, 0, 8),
+                Position         = UDim2.new(0, 22, 0, y + 5),
+                BackgroundColor3 = Library.Theme.InputBg,
+                BorderSizePixel  = 0,
+                ZIndex           = 54,
+                Parent           = editor,
+            })
+            Library:Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = track})
+            local fill = Library:Create("Frame", {
+                Size             = UDim2.new(getComp(), 0, 1, 0),
+                BackgroundColor3 = Library.Theme.Accent,
+                BorderSizePixel  = 0,
+                ZIndex           = 55,
+                Parent           = track,
+            })
+            Library:Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = fill})
+            local valLbl = Library:Create("TextLabel", {
+                Size               = UDim2.new(0, 36, 0, 18),
+                Position           = UDim2.new(1, -40, 0, y),
+                BackgroundTransparency = 1,
+                Font               = Enum.Font.Gotham,
+                TextSize           = 11,
+                TextColor3         = Library.Theme.Text,
+                Text               = tostring(math.floor(getComp() * 255 + 0.5)),
+                ZIndex             = 54,
+                Parent             = editor,
+            })
+
+            local sliding = false
+            local function updateFromX(x)
+                local rel = math.clamp((x - track.AbsolutePosition.X) / math.max(track.AbsoluteSize.X, 1), 0, 1)
+                local old = Library:SnapshotTheme()
+                setComp(rel)
+                fill.Size = UDim2.new(rel, 0, 1, 0)
+                valLbl.Text = tostring(math.floor(rel * 255 + 0.5))
+                swatch.BackgroundColor3 = Library.Theme[info.Key]
+                Library:ApplyThemeLive(old)
+            end
+
+            track.InputBegan:Connect(function(i)
+                if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                    sliding = true
+                    updateFromX(i.Position.X)
+                end
+            end)
+            Library:Connect(UserInputService.InputChanged, function(i)
+                if not sliding then return end
+                if i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch then
+                    updateFromX(i.Position.X)
+                end
+            end)
+            Library:Connect(UserInputService.InputEnded, function(i)
+                if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                    sliding = false
+                end
+            end)
+
+            return function()
+                local c = Library.Theme[info.Key]
+                local r, g, b = c.R, c.G, c.B
+                -- refresh visuals from theme
+                local rel = (name == "R" and r) or (name == "G" and g) or b
+                fill.Size = UDim2.new(rel, 0, 1, 0)
+                valLbl.Text = tostring(math.floor(rel * 255 + 0.5))
+                swatch.BackgroundColor3 = c
+            end
+        end
+
+        local refreshR = makeChannel("R", 0, function() return Library.Theme[info.Key].R end, function(v)
+            local c = Library.Theme[info.Key]
+            Library.Theme[info.Key] = Color3.new(v, c.G, c.B)
+        end)
+        local refreshG = makeChannel("G", 26, function() return Library.Theme[info.Key].G end, function(v)
+            local c = Library.Theme[info.Key]
+            Library.Theme[info.Key] = Color3.new(c.R, v, c.B)
+        end)
+        local refreshB = makeChannel("B", 52, function() return Library.Theme[info.Key].B end, function(v)
+            local c = Library.Theme[info.Key]
+            Library.Theme[info.Key] = Color3.new(c.R, c.G, v)
+        end)
+
+        local expanded = false
+        swatch.MouseButton1Click:Connect(function()
+            expanded = not expanded
+            editor.Visible = expanded
+            row.Size = expanded and UDim2.new(1, 0, 0, 124) or UDim2.new(1, 0, 0, 40)
+            if expanded then
+                refreshR(); refreshG(); refreshB()
+            end
+        end)
+
+        return row
+    end
+
+    for _, info in ipairs(THEME_ROWS) do
+        makeColorRow(info)
+    end
+
+    settingsSection("Actions")
+
+    local resetBtn = Library:Create("TextButton", {
+        Size             = UDim2.new(1, 0, 0, 36),
+        BackgroundColor3 = Library.Theme.InputBg,
+        Font             = Enum.Font.GothamBold,
+        TextSize         = 13,
+        TextColor3       = Library.Theme.Text,
+        Text             = "Reset Theme to Default",
+        BorderSizePixel  = 0,
+        ZIndex           = 52,
+        Parent           = settingsScroll,
+    })
+    Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = resetBtn})
+    Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = resetBtn})
+    resetBtn.MouseButton1Click:Connect(function()
+        Library:ResetTheme()
+        keyBindBtn.TextColor3 = Library.Theme.Accent
+        for key, sw in pairs(colorSwatches) do
+            if Library.Theme[key] then
+                sw.BackgroundColor3 = Library.Theme[key]
+            end
+        end
+        Library:Notify({ Title = "Theme Reset", Content = "กลับค่าสีเริ่มต้นแล้ว", Duration = 2 })
+    end)
+
+    local function setSettingsOpen(open)
+        Library.SettingsOpen = open
+        SettingsPanel.Visible = open
+        SettingsBtn.ImageColor3 = open and Library.Theme.Accent or Library.Theme.TextSub
+    end
+
+    SettingsBtn.MouseButton1Click:Connect(function()
+        setSettingsOpen(not Library.SettingsOpen)
+    end)
+    settingsClose.MouseButton1Click:Connect(function()
+        setSettingsOpen(false)
     end)
 
     -- ── Sidebar ───────────────────────────────────────────────
