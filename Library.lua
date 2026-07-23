@@ -558,49 +558,102 @@ function Library:CreateWindow(config)
         Parent                 = TopBar,
     })
 
-    -- ── Minimize Button ───────────────────────────────────────
-    local MinBtn = Library:Create("TextButton", {
-        Size               = UDim2.new(0, 26, 0, 26),
-        Position           = UDim2.new(1, -56, 0.5, -13),
-        BackgroundTransparency = 1,
-        Font               = Enum.Font.GothamBold,
-        TextSize           = 16,
-        TextColor3         = Library.Theme.TextSub,
-        Text               = "-",
-        ZIndex             = 4,
-        Parent             = TopBar,
-    })
+    -- ── Window control icons (minimize / close) ───────────────
+    local function makeChromeIconBtn(posX, makeGlyph)
+        local btn = Library:Create("TextButton", {
+            Size               = UDim2.new(0, 28, 0, 28),
+            Position           = UDim2.new(1, posX, 0.5, -14),
+            BackgroundColor3   = Library.Theme.CardBg,
+            BackgroundTransparency = 1,
+            Text               = "",
+            AutoButtonColor    = false,
+            ZIndex             = 4,
+            Parent             = TopBar,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = btn})
 
-    MinBtn.MouseEnter:Connect(function()
-        Library:Tween(MinBtn, {TextColor3 = Library.Theme.Text}, 0.15):Play()
+        local iconColor = Library.Theme.TextSub
+        local glyphs = makeGlyph(btn, iconColor)
+
+        local function setGlyphColor(color)
+            for _, g in ipairs(glyphs) do
+                if g:IsA("GuiObject") then
+                    g.BackgroundColor3 = color
+                end
+            end
+        end
+
+        btn.MouseEnter:Connect(function()
+            Library:Tween(btn, {BackgroundTransparency = 0.35}, 0.12):Play()
+            setGlyphColor(Library.Theme.Text)
+        end)
+        btn.MouseLeave:Connect(function()
+            Library:Tween(btn, {BackgroundTransparency = 1}, 0.12):Play()
+            setGlyphColor(Library.Theme.TextSub)
+        end)
+
+        return btn, setGlyphColor
+    end
+
+    -- Minimize: clean horizontal dash
+    local MinBtn = makeChromeIconBtn(-58, function(btn, color)
+        local bar = Library:Create("Frame", {
+            Size             = UDim2.new(0, 12, 0, 2),
+            Position         = UDim2.new(0.5, -6, 0.5, -1),
+            BackgroundColor3 = color,
+            BorderSizePixel  = 0,
+            ZIndex           = 5,
+            Parent           = btn,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = bar})
+        return { bar }
     end)
-    MinBtn.MouseLeave:Connect(function()
-        Library:Tween(MinBtn, {TextColor3 = Library.Theme.TextSub}, 0.15):Play()
-    end)
+
     MinBtn.MouseButton1Click:Connect(function()
         MainFrame.Visible = false
         openBtn.Visible   = true
         Library.SettingsOpen = false
     end)
 
-    -- ── Close Button ──────────────────────────────────────────
-    local CloseBtn = Library:Create("TextButton", {
-        Size               = UDim2.new(0, 26, 0, 26),
-        Position           = UDim2.new(1, -26, 0.5, -13),
-        BackgroundTransparency = 1,
-        Font               = Enum.Font.GothamBold,
-        TextSize           = 16,
-        TextColor3         = Library.Theme.TextSub,
-        Text               = "X",
-        ZIndex             = 4,
-        Parent             = TopBar,
-    })
+    -- Close: modern X from two rotated bars
+    local CloseBtn, setCloseGlyphColor = makeChromeIconBtn(-28, function(btn, color)
+        local a = Library:Create("Frame", {
+            Size             = UDim2.new(0, 13, 0, 2),
+            Position         = UDim2.new(0.5, -6.5, 0.5, -1),
+            BackgroundColor3 = color,
+            BorderSizePixel  = 0,
+            Rotation         = 45,
+            ZIndex           = 5,
+            Parent           = btn,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = a})
+        local b = Library:Create("Frame", {
+            Size             = UDim2.new(0, 13, 0, 2),
+            Position         = UDim2.new(0.5, -6.5, 0.5, -1),
+            BackgroundColor3 = color,
+            BorderSizePixel  = 0,
+            Rotation         = -45,
+            ZIndex           = 5,
+            Parent           = btn,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = b})
+        return { a, b }
+    end)
 
+    -- Override close hover to danger red
     CloseBtn.MouseEnter:Connect(function()
-        Library:Tween(CloseBtn, {TextColor3 = Library.Theme.Danger}, 0.15):Play()
+        Library:Tween(CloseBtn, {
+            BackgroundTransparency = 0.25,
+            BackgroundColor3 = Color3.fromRGB(60, 18, 22),
+        }, 0.12):Play()
+        setCloseGlyphColor(Library.Theme.Danger)
     end)
     CloseBtn.MouseLeave:Connect(function()
-        Library:Tween(CloseBtn, {TextColor3 = Library.Theme.TextSub}, 0.15):Play()
+        Library:Tween(CloseBtn, {
+            BackgroundTransparency = 1,
+            BackgroundColor3 = Library.Theme.CardBg,
+        }, 0.12):Play()
+        setCloseGlyphColor(Library.Theme.TextSub)
     end)
     CloseBtn.MouseButton1Click:Connect(function()
         Library:Destroy()
@@ -1157,6 +1210,9 @@ function Library:CreateWindow(config)
         setSettingsOpen(not Library.SettingsOpen)
     end)
     settingsClose.MouseButton1Click:Connect(function()
+        setSettingsOpen(false)
+    end)
+    MinBtn.MouseButton1Click:Connect(function()
         setSettingsOpen(false)
     end)
 
