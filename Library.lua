@@ -586,11 +586,11 @@ function Library:CreateWindow(config)
         return btn, setGlyphColor
     end
 
-    -- Settings: plain icon only
+    -- Settings: plain icon only (slightly smaller than min/close)
     local SettingsBtn = Library:Create("ImageButton", {
         Name                   = "SettingsBtn",
-        Size                   = UDim2.new(0, 28, 0, 28),
-        Position               = UDim2.new(1, -88, 0.5, -14),
+        Size                   = UDim2.new(0, 20, 0, 20),
+        Position               = UDim2.new(1, -84, 0.5, -10),
         BackgroundTransparency = 1,
         Image                  = "rbxassetid://108218465401763",
         ScaleType              = Enum.ScaleType.Fit,
