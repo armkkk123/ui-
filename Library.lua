@@ -370,6 +370,8 @@ function Library:CreateWindow(config)
     config = config or {}
 
     local windowTitle  = config.Title      or "Custom Hub"
+    local windowSize   = config.Size       or UDim2.new(0, 540, 0, 360)
+    local toggleIcon   = config.ToggleIcon or "rbxthumb://type=Asset&id=8829255607&w=150&h=150"
     -- Auto-responsive window size calculation for Mobile & Tablet viewports
     local vp           = workspace.CurrentCamera.ViewportSize
     local targetWidth  = math.min(windowSize.X.Offset, math.max(300, vp.X - 24))
