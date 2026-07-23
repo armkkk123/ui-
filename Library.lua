@@ -213,7 +213,7 @@ do
             Position            = UDim2.new(0, 12, 0, 6),
             BackgroundTransparency = 1,
             Font                = Enum.Font.GothamBold,
-            TextSize            = 13,
+            TextSize           = 15,
             TextColor3          = Library.Theme.Text,
             Text                = title,
             TextXAlignment      = Enum.TextXAlignment.Left,
@@ -225,7 +225,7 @@ do
             Position            = UDim2.new(0, 12, 0, 28),
             BackgroundTransparency = 1,
             Font                = Enum.Font.Gotham,
-            TextSize            = 11,
+            TextSize           = 13,
             TextColor3          = Library.Theme.TextDim,
             Text                = content,
             TextWrapped         = true,
@@ -393,7 +393,7 @@ function Library:CreateWindow(config)
     -- ── TopBar ────────────────────────────────────────────────
     local TopBar = Library:Create("Frame", {
         Name             = "TopBar",
-        Size             = UDim2.new(1, 0, 0, 38),
+        Size             = UDim2.new(1, 0, 0, 44),
         BackgroundColor3 = Library.Theme.TopBarBg,
         BorderSizePixel  = 0,
         ZIndex           = 2,
@@ -412,8 +412,8 @@ function Library:CreateWindow(config)
     Library:MakeDraggable(TopBar, MainFrame)
 
     Library:Create("ImageLabel", {
-        Size                   = UDim2.new(0, 20, 0, 20),
-        Position               = UDim2.new(0, 14, 0.5, -10),
+        Size                   = UDim2.new(0, 24, 0, 24),
+        Position               = UDim2.new(0, 14, 0.5, -12),
         BackgroundTransparency = 1,
         Image                  = "rbxassetid://101260008442128",
         ZIndex                 = 3,
@@ -425,7 +425,7 @@ function Library:CreateWindow(config)
         Position           = UDim2.new(0, 42, 0, 0),
         BackgroundTransparency = 1,
         Font               = Enum.Font.GothamBold,
-        TextSize           = 13,
+        TextSize           = 15,
         TextColor3         = Library.Theme.Text,
         Text               = windowTitle,
         TextXAlignment     = Enum.TextXAlignment.Left,
@@ -439,7 +439,7 @@ function Library:CreateWindow(config)
         Position           = UDim2.new(1, -56, 0.5, -13),
         BackgroundTransparency = 1,
         Font               = Enum.Font.GothamBold,
-        TextSize           = 14,
+        TextSize           = 16,
         TextColor3         = Library.Theme.TextSub,
         Text               = "-",
         ZIndex             = 4,
@@ -463,7 +463,7 @@ function Library:CreateWindow(config)
         Position           = UDim2.new(1, -26, 0.5, -13),
         BackgroundTransparency = 1,
         Font               = Enum.Font.GothamBold,
-        TextSize           = 14,
+        TextSize           = 16,
         TextColor3         = Library.Theme.TextSub,
         Text               = "X",
         ZIndex             = 4,
@@ -499,8 +499,8 @@ function Library:CreateWindow(config)
     -- ── Sidebar ───────────────────────────────────────────────
     local SideBar = Library:Create("Frame", {
         Name             = "SideBar",
-        Size             = UDim2.new(0, 138, 1, -48),
-        Position         = UDim2.new(0, 6, 0, 43),
+        Size             = UDim2.new(0, 168, 1, -54),
+        Position         = UDim2.new(0, 6, 0, 49),
         BackgroundColor3 = Library.Theme.SideBarBg,
         BorderSizePixel  = 0,
         ClipsDescendants = true,
@@ -535,8 +535,8 @@ function Library:CreateWindow(config)
     -- ── Content Area ──────────────────────────────────────────
     local ContentArea = Library:Create("Frame", {
         Name             = "ContentArea",
-        Size             = UDim2.new(1, -156, 1, -48),
-        Position         = UDim2.new(0, 150, 0, 43),
+        Size             = UDim2.new(1, -186, 1, -54),
+        Position         = UDim2.new(0, 180, 0, 49),
         BackgroundTransparency = 1,
         Parent           = MainFrame,
     })
@@ -576,10 +576,10 @@ function Library:CreateWindow(config)
 
         local TabBtn = Library:Create("TextButton", {
             Name             = tabName .. "_Btn",
-            Size             = UDim2.new(1, 0, 0, 34),
+            Size             = UDim2.new(1, 0, 0, 42),
             BackgroundColor3 = Color3.fromRGB(15, 15, 20),
             Font             = Enum.Font.GothamMedium,
-            TextSize         = 11,
+            TextSize           = 13,
             TextColor3       = Library.Theme.TextSub,
             Text             = (tabIcon and tabIcon .. "  " or "") .. tabName,
             BorderSizePixel  = 0,
@@ -665,7 +665,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(0, 8, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamBold,
-                    TextSize           = 11,
+                    TextSize           = 13,
                     TextColor3         = Color3.fromRGB(150, 150, 165),
                     Text               = string.upper(text),
                     TextXAlignment     = Enum.TextXAlignment.Left,
@@ -693,7 +693,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(0, 10, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.Gotham,
-                    TextSize           = 11,
+                    TextSize           = 13,
                     TextColor3         = Library.Theme.TextDim,
                     Text               = text,
                     TextXAlignment     = Enum.TextXAlignment.Left,
@@ -715,7 +715,7 @@ function Library:CreateWindow(config)
                 local desc     = options.Description
 
                 local container = Library:Create("Frame", {
-                    Size             = UDim2.new(1, 0, 0, desc and 46 or 34),
+                    Size             = UDim2.new(1, 0, 0, desc and 54 or 42),
                     BackgroundTransparency = 1,
                     Parent           = TabPage,
                 })
@@ -725,7 +725,7 @@ function Library:CreateWindow(config)
                     BackgroundColor3 = Library.Theme.InputBg,
                     BorderSizePixel  = 0,
                     Font             = Enum.Font.GothamBold,
-                    TextSize         = 12,
+                    TextSize           = 16,
                     TextColor3       = Library.Theme.Text,
                     Text             = text,
                     Parent           = container,
@@ -739,13 +739,13 @@ function Library:CreateWindow(config)
                 })
 
                 if desc then
-                    btn.Size = UDim2.new(1, 0, 0, 28)
+                    btn.Size = UDim2.new(1, 0, 0, 36)
                     Library:Create("TextLabel", {
                         Size               = UDim2.new(1, -10, 0, 16),
-                        Position           = UDim2.new(0, 5, 0, 28),
+                        Position           = UDim2.new(0, 5, 0, 36),
                         BackgroundTransparency = 1,
                         Font               = Enum.Font.Gotham,
-                        TextSize           = 10,
+                        TextSize           = 12,
                         TextColor3         = Library.Theme.TextSub,
                         Text               = desc,
                         TextXAlignment     = Enum.TextXAlignment.Left,
@@ -754,8 +754,8 @@ function Library:CreateWindow(config)
                     })
                 end
 
-                local btnNormalSize = desc and UDim2.new(1, 0, 0, 28) or UDim2.new(1, 0, 1, 0)
-                local btnPressSize  = desc and UDim2.new(1, -4, 0, 26) or UDim2.new(1, -4, 1, -4)
+                local btnNormalSize = desc and UDim2.new(1, 0, 0, 36) or UDim2.new(1, 0, 1, 0)
+                local btnPressSize  = desc and UDim2.new(1, -4, 0, 34) or UDim2.new(1, -4, 1, -4)
 
                 btn.MouseEnter:Connect(function()
                     Library:Tween(btn, {BackgroundColor3 = Library.Theme.Success}, 0.15):Play()
@@ -788,7 +788,7 @@ function Library:CreateWindow(config)
                 local desc      = options.Description
 
                 local container = Library:Create("Frame", {
-                    Size             = UDim2.new(1, 0, 0, desc and 46 or 34),
+                    Size             = UDim2.new(1, 0, 0, desc and 54 or 42),
                     BackgroundColor3 = Library.Theme.CardBg,
                     BorderSizePixel  = 0,
                     Parent           = TabPage,
@@ -802,7 +802,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(0, 10, 0, desc and 4 or 6),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamSemibold,
-                    TextSize           = 12,
+                    TextSize           = 16,
                     TextColor3         = Library.Theme.TextDim,
                     Text               = labelText,
                     TextXAlignment     = Enum.TextXAlignment.Left,
@@ -815,7 +815,7 @@ function Library:CreateWindow(config)
                         Position           = UDim2.new(0, 10, 0, 26),
                         BackgroundTransparency = 1,
                         Font               = Enum.Font.Gotham,
-                        TextSize           = 10,
+                        TextSize           = 12,
                         TextColor3         = Library.Theme.TextSub,
                         Text               = desc,
                         TextXAlignment     = Enum.TextXAlignment.Left,
@@ -892,7 +892,7 @@ function Library:CreateWindow(config)
                 default = math.clamp(default, minVal, maxVal)
 
                 local container = Library:Create("Frame", {
-                    Size             = UDim2.new(1, 0, 0, 50),
+                    Size             = UDim2.new(1, 0, 0, 58),
                     BackgroundColor3 = Library.Theme.CardBg,
                     BorderSizePixel  = 0,
                     Parent           = TabPage,
@@ -906,7 +906,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(0, 10, 0, 4),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamSemibold,
-                    TextSize           = 12,
+                    TextSize           = 16,
                     TextColor3         = Library.Theme.TextDim,
                     Text               = labelText,
                     TextXAlignment     = Enum.TextXAlignment.Left,
@@ -918,7 +918,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(1, -78, 0, 4),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamBold,
-                    TextSize           = 12,
+                    TextSize           = 16,
                     TextColor3         = Library.Theme.Text,
                     Text               = tostring(default) .. suffix,
                     TextXAlignment     = Enum.TextXAlignment.Right,
@@ -927,7 +927,7 @@ function Library:CreateWindow(config)
 
                 local barBg = Library:Create("Frame", {
                     Size             = UDim2.new(1, -20, 0, 8),
-                    Position         = UDim2.new(0, 10, 0, 32),
+                    Position         = UDim2.new(0, 10, 0, 36),
                     BackgroundColor3 = Library.Theme.InputBg,
                     BorderSizePixel  = 0,
                     Parent           = container,
@@ -1018,7 +1018,7 @@ function Library:CreateWindow(config)
                 local maxHeight = options.MaxHeight or 160
 
                 local container = Library:Create("Frame", {
-                    Size             = UDim2.new(1, 0, 0, 36),
+                    Size             = UDim2.new(1, 0, 0, 44),
                     BackgroundTransparency = 1,
                     ClipsDescendants = false,
                     ZIndex           = 10,
@@ -1026,7 +1026,7 @@ function Library:CreateWindow(config)
                 })
 
                 local mainBg = Library:Create("Frame", {
-                    Size             = UDim2.new(1, 0, 0, 34),
+                    Size             = UDim2.new(1, 0, 0, 42),
                     BackgroundColor3 = Library.Theme.InputBg,
                     BorderSizePixel  = 0,
                     ZIndex           = 10,
@@ -1040,7 +1040,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(0, 10, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamSemibold,
-                    TextSize           = 12,
+                    TextSize           = 16,
                     TextColor3         = Library.Theme.TextDim,
                     Text               = labelText,
                     TextXAlignment     = Enum.TextXAlignment.Left,
@@ -1053,7 +1053,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(0.45, 0, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamBold,
-                    TextSize           = 11,
+                    TextSize           = 13,
                     TextColor3         = Library.Theme.Accent,
                     Text               = tostring(default),
                     TextXAlignment     = Enum.TextXAlignment.Right,
@@ -1067,7 +1067,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(1, -24, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamBold,
-                    TextSize           = 11,
+                    TextSize           = 13,
                     TextColor3         = Library.Theme.TextSub,
                     Text               = "▼",
                     ZIndex             = 11,
@@ -1076,7 +1076,7 @@ function Library:CreateWindow(config)
 
                 local listPanel = Library:Create("Frame", {
                     Size             = UDim2.new(1, 0, 0, 0),
-                    Position         = UDim2.new(0, 0, 0, 38),
+                    Position         = UDim2.new(0, 0, 0, 46),
                     BackgroundColor3 = Library.Theme.DropdownBg,
                     BorderSizePixel  = 0,
                     ClipsDescendants = true,
@@ -1120,7 +1120,7 @@ function Library:CreateWindow(config)
                     arrow.Text = "▼"
                     Library:Tween(ddStroke, {Color = Library.Theme.Stroke}, 0.15):Play()
                     Library:Tween(listPanel, {Size = UDim2.new(1, 0, 0, 0)}, 0.2, Enum.EasingStyle.Quart):Play()
-                    Library:Tween(container, {Size = UDim2.new(1, 0, 0, 36)}, 0.2, Enum.EasingStyle.Quart):Play()
+                    Library:Tween(container, {Size = UDim2.new(1, 0, 0, 44)}, 0.2, Enum.EasingStyle.Quart):Play()
                     task.delay(0.22, function() listPanel.Visible = false end)
                 end
 
@@ -1132,7 +1132,7 @@ function Library:CreateWindow(config)
                     for _, opt in ipairs(list) do
                         local isSel = (opt == selected)
                         local item = Library:Create("TextButton", {
-                            Size             = UDim2.new(1, 0, 0, 28),
+                            Size             = UDim2.new(1, 0, 0, 36),
                             BackgroundColor3 = isSel and Library.Theme.AccentDark or Color3.fromRGB(22, 22, 30),
                             Text             = "",
                             BorderSizePixel  = 0,
@@ -1146,7 +1146,7 @@ function Library:CreateWindow(config)
                             Position           = UDim2.new(0, 10, 0, 0),
                             BackgroundTransparency = 1,
                             Font               = isSel and Enum.Font.GothamBold or Enum.Font.Gotham,
-                            TextSize           = 11,
+                            TextSize           = 13,
                             TextColor3         = isSel and Library.Theme.Text or Library.Theme.TextDim,
                             Text               = tostring(opt),
                             TextXAlignment     = Enum.TextXAlignment.Left,
@@ -1160,7 +1160,7 @@ function Library:CreateWindow(config)
                                 Position           = UDim2.new(1, -24, 0, 0),
                                 BackgroundTransparency = 1,
                                 Font               = Enum.Font.GothamBold,
-                                TextSize           = 12,
+                                TextSize           = 16,
                                 TextColor3         = Library.Theme.Text,
                                 Text               = "✓",
                                 ZIndex             = 22,
@@ -1189,7 +1189,7 @@ function Library:CreateWindow(config)
                         end)
                     end
 
-                    local itemH = math.min(#list * 30 + 8, maxHeight)
+                    local itemH = math.min(#list * 38 + 8, maxHeight)
                     listPanel.Size = UDim2.new(1, 0, 0, open and itemH or 0)
                 end
 
@@ -1203,10 +1203,10 @@ function Library:CreateWindow(config)
 
                     if open then
                         listPanel.Visible = true
-                        local targetH = math.min(#optList * 30 + 8, maxHeight)
+                        local targetH = math.min(#optList * 38 + 8, maxHeight)
                         listPanel.Size = UDim2.new(1, 0, 0, 0)
                         Library:Tween(listPanel, {Size = UDim2.new(1, 0, 0, targetH)}, 0.25, Enum.EasingStyle.Quart):Play()
-                        Library:Tween(container, {Size = UDim2.new(1, 0, 0, 36 + targetH + 4)}, 0.25, Enum.EasingStyle.Quart):Play()
+                        Library:Tween(container, {Size = UDim2.new(1, 0, 0, 44 + targetH + 4)}, 0.25, Enum.EasingStyle.Quart):Play()
                     else
                         CloseDropdown()
                     end
@@ -1248,7 +1248,7 @@ function Library:CreateWindow(config)
                 local callback   = options.Callback    or function() end
 
                 local container = Library:Create("Frame", {
-                    Size             = UDim2.new(1, 0, 0, 34),
+                    Size             = UDim2.new(1, 0, 0, 42),
                     BackgroundColor3 = Library.Theme.CardBg,
                     BorderSizePixel  = 0,
                     Parent           = TabPage,
@@ -1262,7 +1262,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(0, 10, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamSemibold,
-                    TextSize           = 12,
+                    TextSize           = 16,
                     TextColor3         = Library.Theme.TextDim,
                     Text               = labelText,
                     TextXAlignment     = Enum.TextXAlignment.Left,
@@ -1281,7 +1281,7 @@ function Library:CreateWindow(config)
                     BackgroundColor3       = Library.Theme.InputBg,
                     BorderSizePixel        = 0,
                     Font                   = Enum.Font.Gotham,
-                    TextSize               = 11,
+                    TextSize           = 13,
                     TextColor3             = Library.Theme.Text,
                     PlaceholderColor3      = Color3.fromRGB(90, 90, 100),
                     PlaceholderText        = placeholder,
@@ -1336,7 +1336,7 @@ function Library:CreateWindow(config)
                 local callback  = options.Callback or function() end
 
                 local container = Library:Create("Frame", {
-                    Size             = UDim2.new(1, 0, 0, 34),
+                    Size             = UDim2.new(1, 0, 0, 42),
                     BackgroundColor3 = Library.Theme.CardBg,
                     BorderSizePixel  = 0,
                     Parent           = TabPage,
@@ -1350,7 +1350,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(0, 10, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamSemibold,
-                    TextSize           = 12,
+                    TextSize           = 16,
                     TextColor3         = Library.Theme.TextDim,
                     Text               = labelText,
                     TextXAlignment     = Enum.TextXAlignment.Left,
@@ -1373,7 +1373,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(0, 26, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamBold,
-                    TextSize           = 12,
+                    TextSize           = 16,
                     TextColor3         = Library.Theme.Text,
                     Text               = tostring(val),
                     TextXAlignment     = Enum.TextXAlignment.Center,
@@ -1393,7 +1393,7 @@ function Library:CreateWindow(config)
                         Position         = pos,
                         BackgroundColor3 = Library.Theme.InputBg,
                         Font             = Enum.Font.GothamBold,
-                        TextSize         = 14,
+                        TextSize           = 16,
                         TextColor3       = Library.Theme.Text,
                         Text             = txt,
                         BorderSizePixel  = 0,
@@ -1447,7 +1447,7 @@ function Library:CreateWindow(config)
                 local callback  = options.Callback or function() end
 
                 local container = Library:Create("Frame", {
-                    Size             = UDim2.new(1, 0, 0, 34),
+                    Size             = UDim2.new(1, 0, 0, 42),
                     BackgroundColor3 = Library.Theme.CardBg,
                     BorderSizePixel  = 0,
                     Parent           = TabPage,
@@ -1461,7 +1461,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(0, 10, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamSemibold,
-                    TextSize           = 12,
+                    TextSize           = 16,
                     TextColor3         = Library.Theme.TextDim,
                     Text               = labelText,
                     TextXAlignment     = Enum.TextXAlignment.Left,
@@ -1481,7 +1481,7 @@ function Library:CreateWindow(config)
                     Position         = UDim2.new(1, -108, 0.5, -12),
                     BackgroundColor3 = Library.Theme.InputBg,
                     Font             = Enum.Font.GothamBold,
-                    TextSize         = 11,
+                    TextSize           = 13,
                     TextColor3       = Library.Theme.Accent,
                     Text             = "[" .. currentKey.Name .. "]",
                     BorderSizePixel  = 0,
@@ -1544,7 +1544,7 @@ function Library:CreateWindow(config)
                 local h, s, v     = default:ToHSV()
 
                 local container = Library:Create("Frame", {
-                    Size             = UDim2.new(1, 0, 0, 34),
+                    Size             = UDim2.new(1, 0, 0, 42),
                     BackgroundColor3 = Library.Theme.CardBg,
                     BorderSizePixel  = 0,
                     ClipsDescendants = true,
@@ -1559,7 +1559,7 @@ function Library:CreateWindow(config)
                     Position           = UDim2.new(0, 10, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamSemibold,
-                    TextSize           = 12,
+                    TextSize           = 16,
                     TextColor3         = Library.Theme.TextDim,
                     Text               = labelText,
                     TextXAlignment     = Enum.TextXAlignment.Left,
@@ -1794,7 +1794,7 @@ function Library:CreateWindow(config)
                     AutomaticSize      = Enum.AutomaticSize.Y,
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamBold,
-                    TextSize           = 12,
+                    TextSize           = 16,
                     TextColor3         = Library.Theme.Text,
                     Text               = title,
                     TextXAlignment     = Enum.TextXAlignment.Left,
@@ -1807,7 +1807,7 @@ function Library:CreateWindow(config)
                     AutomaticSize      = Enum.AutomaticSize.Y,
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.Gotham,
-                    TextSize           = 11,
+                    TextSize           = 13,
                     TextColor3         = Library.Theme.TextSub,
                     Text               = content,
                     TextWrapped        = true,
