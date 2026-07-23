@@ -335,12 +335,12 @@ function Library:CreateWindow(config)
     config = config or {}
 
     local windowTitle  = config.Title      or "Custom Hub"
-    local windowSize   = config.Size       or UDim2.new(0, 560, 0, 380)
     local toggleIcon   = config.ToggleIcon or "rbxassetid://101260008442128"
 
+    -- ขนาดหน้าต่างถูกล็อคตายตัวใน Library ไม่สามารถเปลี่ยนจากภายนอกได้
     local vp           = workspace.CurrentCamera.ViewportSize
-    local targetWidth  = math.min(windowSize.X.Offset, math.max(300, vp.X - 24))
-    local targetHeight = math.min(windowSize.Y.Offset, math.max(260, vp.Y - 24))
+    local targetWidth  = math.min(620, math.max(300, vp.X - 24))
+    local targetHeight = math.min(480, math.max(260, vp.Y - 24))
     local finalSize    = UDim2.new(0, targetWidth, 0, targetHeight)
 
     local startX       = math.max(10, (vp.X - targetWidth) / 2)
@@ -520,15 +520,15 @@ function Library:CreateWindow(config)
         Parent                 = SideBar,
     })
     Library:Create("UIListLayout", {
-        Padding        = UDim.new(0, 4),
+        Padding        = UDim.new(0, 5),
         SortOrder      = Enum.SortOrder.LayoutOrder,
         Parent         = SideScroll,
     })
     Library:Create("UIPadding", {
-        PaddingTop    = UDim.new(0, 6),
-        PaddingBottom = UDim.new(0, 6),
-        PaddingLeft   = UDim.new(0, 6),
-        PaddingRight  = UDim.new(0, 6),
+        PaddingTop    = UDim.new(0, 8),
+        PaddingBottom = UDim.new(0, 8),
+        PaddingLeft   = UDim.new(0, 8),
+        PaddingRight  = UDim.new(0, 8),
         Parent        = SideScroll,
     })
 
@@ -562,15 +562,15 @@ function Library:CreateWindow(config)
             Parent                 = ContentArea,
         })
         Library:Create("UIListLayout", {
-            Padding       = UDim.new(0, 7),
+            Padding       = UDim.new(0, 8),
             SortOrder     = Enum.SortOrder.LayoutOrder,
             Parent        = TabPage,
         })
         Library:Create("UIPadding", {
-            PaddingTop    = UDim.new(0, 4),
-            PaddingBottom = UDim.new(0, 12),
-            PaddingLeft   = UDim.new(0, 4),
-            PaddingRight  = UDim.new(0, 10),
+            PaddingTop    = UDim.new(0, 8),
+            PaddingBottom = UDim.new(0, 16),
+            PaddingLeft   = UDim.new(0, 8),
+            PaddingRight  = UDim.new(0, 12),
             Parent        = TabPage,
         })
 
@@ -1104,9 +1104,9 @@ function Library:CreateWindow(config)
                     Parent    = listScroll,
                 })
                 Library:Create("UIPadding", {
-                    PaddingTop    = UDim.new(0, 4),
+                    PaddingTop    = UDim.new(0, 8),
                     PaddingBottom = UDim.new(0, 4),
-                    PaddingLeft   = UDim.new(0, 4),
+                    PaddingLeft   = UDim.new(0, 8),
                     PaddingRight  = UDim.new(0, 4),
                     Parent        = listScroll,
                 })
@@ -1780,7 +1780,7 @@ function Library:CreateWindow(config)
                     PaddingTop    = UDim.new(0, 8),
                     PaddingBottom = UDim.new(0, 8),
                     PaddingLeft   = UDim.new(0, 10),
-                    PaddingRight  = UDim.new(0, 10),
+                    PaddingRight  = UDim.new(0, 12),
                     Parent        = frame,
                 })
                 Library:Create("UIListLayout", {
