@@ -39,8 +39,8 @@ local Library = {
         Accent        = Color3.fromRGB(0, 170, 255),
         AccentDark    = Color3.fromRGB(0, 110, 200),
         AccentHover   = Color3.fromRGB(40, 190, 255),
-        Success       = Color3.fromRGB(28, 28, 38),
-        SuccessHover  = Color3.fromRGB(36, 36, 48),
+        Success       = Color3.fromRGB(34, 150, 70),
+        SuccessHover  = Color3.fromRGB(44, 170, 85),
         Danger        = Color3.fromRGB(220, 65, 65),
         Text          = Color3.fromRGB(245, 245, 250),
         TextDim       = Color3.fromRGB(175, 175, 190),
@@ -722,7 +722,7 @@ function Library:CreateWindow(config)
 
                 local btn = Library:Create("TextButton", {
                     Size             = UDim2.new(1, 0, 1, 0),
-                    BackgroundColor3 = Library.Theme.Success,
+                    BackgroundColor3 = Library.Theme.InputBg,
                     BorderSizePixel  = 0,
                     Font             = Enum.Font.GothamBold,
                     TextSize         = 12,
@@ -755,11 +755,11 @@ function Library:CreateWindow(config)
                 end
 
                 btn.MouseEnter:Connect(function()
-                    Library:Tween(btn, {BackgroundColor3 = Library.Theme.SuccessHover}, 0.15):Play()
+                    Library:Tween(btn, {BackgroundColor3 = Library.Theme.Success}, 0.15):Play()
                     Library:Tween(btnStroke, {Color = Library.Theme.Accent}, 0.15):Play()
                 end)
                 btn.MouseLeave:Connect(function()
-                    Library:Tween(btn, {BackgroundColor3 = Library.Theme.Success}, 0.15):Play()
+                    Library:Tween(btn, {BackgroundColor3 = Library.Theme.InputBg}, 0.15):Play()
                     Library:Tween(btnStroke, {Color = Library.Theme.Stroke}, 0.15):Play()
                 end)
                 btn.MouseButton1Down:Connect(function()
@@ -1562,7 +1562,7 @@ function Library:CreateWindow(config)
                 -- Preview swatch + expand button
                 local swatch = Library:Create("TextButton", {
                     Size             = UDim2.new(0, 38, 0, 22),
-                    Position         = UDim2.new(1, -46, 0.5, -11),
+                    Position         = UDim2.new(1, -46, 0, 6),
                     BackgroundColor3 = default,
                     Text             = "",
                     BorderSizePixel  = 0,
