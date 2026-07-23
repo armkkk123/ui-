@@ -350,7 +350,7 @@ function Library:CreateWindow(config)
     local openBtn = Library:Create("Frame", {
         Name             = "OpenBtn",
         Size             = UDim2.new(0, 44, 0, 44),
-        Position         = UDim2.new(0, 20, 0.15, 0),
+        Position         = UDim2.new(0, 20, 0, 100),
         BackgroundColor3 = Library.Theme.TopBarBg,
         BorderSizePixel  = 0,
         Active           = true,
@@ -754,6 +754,9 @@ function Library:CreateWindow(config)
                     })
                 end
 
+                local btnNormalSize = desc and UDim2.new(1, 0, 0, 28) or UDim2.new(1, 0, 1, 0)
+                local btnPressSize  = desc and UDim2.new(1, -4, 0, 26) or UDim2.new(1, -4, 1, -4)
+
                 btn.MouseEnter:Connect(function()
                     Library:Tween(btn, {BackgroundColor3 = Library.Theme.Success}, 0.15):Play()
                     Library:Tween(btnStroke, {Color = Library.Theme.Accent}, 0.15):Play()
@@ -763,10 +766,10 @@ function Library:CreateWindow(config)
                     Library:Tween(btnStroke, {Color = Library.Theme.Stroke}, 0.15):Play()
                 end)
                 btn.MouseButton1Down:Connect(function()
-                    Library:Tween(btn, {Size = UDim2.new(1, -4, 1, -4), Position = UDim2.new(0, 2, 0, 2)}, 0.06):Play()
+                    Library:Tween(btn, {Size = btnPressSize, Position = UDim2.new(0, 2, 0, 1)}, 0.06):Play()
                 end)
                 btn.MouseButton1Up:Connect(function()
-                    Library:Tween(btn, {Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0)}, 0.1):Play()
+                    Library:Tween(btn, {Size = btnNormalSize, Position = UDim2.new(0, 0, 0, 0)}, 0.1):Play()
                 end)
                 btn.MouseButton1Click:Connect(function() pcall(callback) end)
 
@@ -1218,11 +1221,15 @@ function Library:CreateWindow(config)
                         pcall(callback, selected)
                     end,
                     Refresh = function(newList)
-                        optList = newList
-                        selected = newList[1] or ""
+                        optList = newList or {}
+                        selected = optList[1] or ""
                         selectedLbl.Text = tostring(selected)
                         if flag then Library.Flags[flag] = selected end
-                        PopulateOptions(newList)
+                        CloseDropdown()
+                        PopulateOptions(optList)
+                        if selected ~= "" and selected ~= "No macros found" then
+                            pcall(callback, selected)
+                        end
                     end,
                     GetValue = function() return selected end,
                 }
