@@ -2521,7 +2521,7 @@ function Library:CreateWindow(config)
                     Parent        = frame,
                 })
                 Library:Create("UIListLayout", {
-                    Padding   = UDim.new(0, 4),
+                    Padding   = UDim.new(0, 8),
                     SortOrder = Enum.SortOrder.LayoutOrder,
                     Parent    = frame,
                 })
@@ -2531,11 +2531,12 @@ function Library:CreateWindow(config)
                     AutomaticSize      = Enum.AutomaticSize.Y,
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamBold,
-                    TextSize           = 16,
+                    TextSize           = 15,
                     TextColor3         = Library.Theme.Text,
                     Text               = title,
                     TextXAlignment     = Enum.TextXAlignment.Left,
                     TextWrapped        = true,
+                    TextStrokeTransparency = 1,
                     Parent             = frame,
                 })
 
@@ -2545,11 +2546,13 @@ function Library:CreateWindow(config)
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.Gotham,
                     TextSize           = 13,
+                    LineHeight         = 1.45,
                     TextColor3         = Library.Theme.TextSub,
                     Text               = content,
                     TextWrapped        = true,
                     TextXAlignment     = Enum.TextXAlignment.Left,
                     TextYAlignment     = Enum.TextYAlignment.Top,
+                    TextStrokeTransparency = 1,
                     Parent             = frame,
                 })
 
