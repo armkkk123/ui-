@@ -812,33 +812,37 @@ function Library:CreateWindow(config)
     settingsSection("Theme Colors")
 
     local THEME_ROWS = {
-        { Key = "MainBg",      Label = "พื้นหลังหลัก (Main)" },
-        { Key = "TopBarBg",    Label = "แถบบน (TopBar)" },
-        { Key = "SideBarBg",   Label = "แถบข้าง (SideBar)" },
-        { Key = "CardBg",      Label = "การ์ด (Card)" },
-        { Key = "CardHoverBg", Label = "การ์ด Hover" },
-        { Key = "InputBg",     Label = "พื้นปุ่ม/ช่องกรอก" },
-        { Key = "DropdownBg",  Label = "Dropdown" },
-        { Key = "Accent",      Label = "สีเน้น (Accent)" },
-        { Key = "AccentDark",  Label = "Accent Dark" },
-        { Key = "AccentHover", Label = "Accent Hover" },
-        { Key = "Success",     Label = "สีปุ่มสำเร็จ" },
-        { Key = "SuccessHover",Label = "Success Hover" },
-        { Key = "Danger",      Label = "สีอันตราย" },
-        { Key = "Text",        Label = "สีข้อความหลัก" },
-        { Key = "TextDim",     Label = "สีข้อความรอง" },
-        { Key = "TextSub",     Label = "สีข้อความจาง" },
-        { Key = "Stroke",      Label = "เส้นขอบ" },
-        { Key = "StrokeLight", Label = "เส้นขอบสว่าง" },
-        { Key = "ToggleOff",   Label = "Toggle Off" },
-        { Key = "NotifyBg",    Label = "พื้น Notify" },
+        { Key = "MainBg",       Label = "Main Background" },
+        { Key = "TopBarBg",     Label = "Top Bar" },
+        { Key = "SideBarBg",    Label = "Side Bar" },
+        { Key = "CardBg",       Label = "Card Background" },
+        { Key = "CardHoverBg",  Label = "Card Hover" },
+        { Key = "InputBg",      Label = "Button / Input" },
+        { Key = "DropdownBg",   Label = "Dropdown" },
+        { Key = "Accent",       Label = "Accent" },
+        { Key = "AccentDark",   Label = "Accent Dark" },
+        { Key = "AccentHover",  Label = "Accent Hover" },
+        { Key = "Success",      Label = "Success / Button" },
+        { Key = "SuccessHover", Label = "Success Hover" },
+        { Key = "Danger",       Label = "Danger" },
+        { Key = "Text",         Label = "Primary Text" },
+        { Key = "TextDim",      Label = "Secondary Text" },
+        { Key = "TextSub",      Label = "Muted Text" },
+        { Key = "Stroke",       Label = "Stroke" },
+        { Key = "StrokeLight",  Label = "Stroke Light" },
+        { Key = "ToggleOff",    Label = "Toggle Off" },
+        { Key = "NotifyBg",     Label = "Notify Background" },
     }
 
     local colorSwatches = {}
+    local ROW_COLLAPSED = 40
+    local ROW_EXPANDED  = 210
 
     local function makeColorRow(info)
+        local h, s, v = Library.Theme[info.Key]:ToHSV()
+
         local row = Library:Create("Frame", {
-            Size             = UDim2.new(1, 0, 0, 40),
+            Size             = UDim2.new(1, 0, 0, ROW_COLLAPSED),
             BackgroundColor3 = Library.Theme.CardBg,
             BorderSizePixel  = 0,
             ClipsDescendants = true,
@@ -875,119 +879,241 @@ function Library:CreateWindow(config)
         Library:Create("UIStroke", {Color = Library.Theme.StrokeLight, Thickness = 1, Parent = swatch})
         colorSwatches[info.Key] = swatch
 
+        -- Expanded Color Picker (preview left + SV canvas right + hue bar)
         local editor = Library:Create("Frame", {
-            Size             = UDim2.new(1, -16, 0, 78),
-            Position         = UDim2.new(0, 8, 0, 40),
-            BackgroundTransparency = 1,
+            Size             = UDim2.new(1, -12, 0, 162),
+            Position         = UDim2.new(0, 6, 0, 40),
+            BackgroundColor3 = Library.Theme.InputBg,
+            BorderSizePixel  = 0,
             Visible          = false,
             ZIndex           = 53,
             Parent           = row,
         })
+        Library:Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = editor})
+        Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = editor})
 
-        local function makeChannel(name, y, getComp, setComp)
-            Library:Create("TextLabel", {
-                Size               = UDim2.new(0, 18, 0, 18),
-                Position           = UDim2.new(0, 0, 0, y),
-                BackgroundTransparency = 1,
-                Font               = Enum.Font.GothamBold,
-                TextSize           = 11,
-                TextColor3         = Library.Theme.TextSub,
-                Text               = name,
-                ZIndex             = 54,
-                Parent             = editor,
-            })
-            local track = Library:Create("Frame", {
-                Size             = UDim2.new(1, -70, 0, 8),
-                Position         = UDim2.new(0, 22, 0, y + 5),
-                BackgroundColor3 = Library.Theme.InputBg,
-                BorderSizePixel  = 0,
-                ZIndex           = 54,
-                Parent           = editor,
-            })
-            Library:Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = track})
-            local fill = Library:Create("Frame", {
-                Size             = UDim2.new(getComp(), 0, 1, 0),
-                BackgroundColor3 = Library.Theme.Accent,
-                BorderSizePixel  = 0,
-                ZIndex           = 55,
-                Parent           = track,
-            })
-            Library:Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = fill})
-            local valLbl = Library:Create("TextLabel", {
-                Size               = UDim2.new(0, 36, 0, 18),
-                Position           = UDim2.new(1, -40, 0, y),
-                BackgroundTransparency = 1,
-                Font               = Enum.Font.Gotham,
-                TextSize           = 11,
-                TextColor3         = Library.Theme.Text,
-                Text               = tostring(math.floor(getComp() * 255 + 0.5)),
-                ZIndex             = 54,
-                Parent             = editor,
-            })
+        Library:Create("TextLabel", {
+            Size               = UDim2.new(1, -12, 0, 22),
+            Position           = UDim2.new(0, 10, 0, 4),
+            BackgroundTransparency = 1,
+            Font               = Enum.Font.GothamBold,
+            TextSize           = 12,
+            TextColor3         = Library.Theme.Text,
+            Text               = "Color Picker",
+            TextXAlignment     = Enum.TextXAlignment.Left,
+            ZIndex             = 54,
+            Parent             = editor,
+        })
 
-            local sliding = false
-            local function updateFromX(x)
-                local rel = math.clamp((x - track.AbsolutePosition.X) / math.max(track.AbsoluteSize.X, 1), 0, 1)
-                local old = Library:SnapshotTheme()
-                setComp(rel)
-                fill.Size = UDim2.new(rel, 0, 1, 0)
-                valLbl.Text = tostring(math.floor(rel * 255 + 0.5))
-                swatch.BackgroundColor3 = Library.Theme[info.Key]
+        local preview = Library:Create("Frame", {
+            Size             = UDim2.new(0, 52, 0, 96),
+            Position         = UDim2.new(0, 10, 0, 28),
+            BackgroundColor3 = Library.Theme[info.Key],
+            BorderSizePixel  = 0,
+            ZIndex           = 54,
+            Parent           = editor,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = preview})
+
+        local svFrame = Library:Create("Frame", {
+            Size             = UDim2.new(1, -80, 0, 96),
+            Position         = UDim2.new(0, 70, 0, 28),
+            BackgroundColor3 = Color3.fromHSV(h, 1, 1),
+            BorderSizePixel  = 0,
+            ClipsDescendants = true,
+            ZIndex           = 54,
+            Parent           = editor,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = svFrame})
+
+        -- White → transparent (left to right = saturation)
+        local satGrad = Library:Create("Frame", {
+            Size                   = UDim2.new(1, 0, 1, 0),
+            BackgroundColor3       = Color3.fromRGB(255, 255, 255),
+            BorderSizePixel        = 0,
+            ZIndex                 = 55,
+            Parent                 = svFrame,
+        })
+        Library:Create("UIGradient", {
+            Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0),
+                NumberSequenceKeypoint.new(1, 1),
+            }),
+            Parent = satGrad,
+        })
+
+        -- Transparent → black (top to bottom = value)
+        local valGrad = Library:Create("Frame", {
+            Size                   = UDim2.new(1, 0, 1, 0),
+            BackgroundColor3       = Color3.fromRGB(0, 0, 0),
+            BorderSizePixel        = 0,
+            ZIndex                 = 56,
+            Parent                 = svFrame,
+        })
+        Library:Create("UIGradient", {
+            Rotation = 90,
+            Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 1),
+                NumberSequenceKeypoint.new(1, 0),
+            }),
+            Parent = valGrad,
+        })
+
+        local cursor = Library:Create("Frame", {
+            Size             = UDim2.new(0, 14, 0, 14),
+            AnchorPoint      = Vector2.new(0.5, 0.5),
+            Position         = UDim2.new(s, 0, 1 - v, 0),
+            BackgroundTransparency = 1,
+            ZIndex           = 57,
+            Parent           = svFrame,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = cursor})
+        Library:Create("UIStroke", {
+            Color = Color3.fromRGB(255, 255, 255),
+            Thickness = 2,
+            Parent = cursor,
+        })
+        Library:Create("Frame", {
+            Size             = UDim2.new(1, -4, 1, -4),
+            Position         = UDim2.new(0, 2, 0, 2),
+            BackgroundTransparency = 1,
+            BorderSizePixel  = 0,
+            ZIndex           = 58,
+            Parent           = cursor,
+        })
+
+        -- Hue rainbow bar
+        local hueFrame = Library:Create("Frame", {
+            Size             = UDim2.new(1, -20, 0, 12),
+            Position         = UDim2.new(0, 10, 0, 132),
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+            BorderSizePixel  = 0,
+            ZIndex           = 54,
+            Parent           = editor,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = hueFrame})
+        Library:Create("UIGradient", {
+            Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0,    Color3.fromRGB(255, 0, 0)),
+                ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
+                ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
+                ColorSequenceKeypoint.new(0.5,  Color3.fromRGB(0, 255, 255)),
+                ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
+                ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
+                ColorSequenceKeypoint.new(1,    Color3.fromRGB(255, 0, 0)),
+            }),
+            Parent = hueFrame,
+        })
+        local hueKnob = Library:Create("Frame", {
+            Size             = UDim2.new(0, 6, 1, 4),
+            Position         = UDim2.new(h, -3, 0, -2),
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+            BorderSizePixel  = 0,
+            ZIndex           = 55,
+            Parent           = hueFrame,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(0, 3), Parent = hueKnob})
+        Library:Create("UIStroke", {Color = Color3.fromRGB(30, 30, 30), Thickness = 1, Parent = hueKnob})
+
+        local hexLbl = Library:Create("TextLabel", {
+            Size               = UDim2.new(1, -20, 0, 14),
+            Position           = UDim2.new(0, 10, 0, 146),
+            BackgroundTransparency = 1,
+            Font               = Enum.Font.Gotham,
+            TextSize           = 11,
+            TextColor3         = Library.Theme.TextSub,
+            Text               = "",
+            TextXAlignment     = Enum.TextXAlignment.Left,
+            ZIndex             = 54,
+            Parent             = editor,
+        })
+
+        local function colorToHex(c)
+            return string.format("#%02X%02X%02X",
+                math.floor(c.R * 255 + 0.5),
+                math.floor(c.G * 255 + 0.5),
+                math.floor(c.B * 255 + 0.5))
+        end
+
+        local function commitColor(fireLive)
+            local newColor = Color3.fromHSV(h, s, v)
+            local old = fireLive and Library:SnapshotTheme() or nil
+            Library.Theme[info.Key] = newColor
+            swatch.BackgroundColor3 = newColor
+            preview.BackgroundColor3 = newColor
+            svFrame.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+            cursor.Position = UDim2.new(s, 0, 1 - v, 0)
+            hueKnob.Position = UDim2.new(h, -3, 0, -2)
+            hexLbl.Text = colorToHex(newColor)
+                .. string.format("  RGB(%d, %d, %d)",
+                    math.floor(newColor.R * 255 + 0.5),
+                    math.floor(newColor.G * 255 + 0.5),
+                    math.floor(newColor.B * 255 + 0.5))
+            if fireLive and old then
                 Library:ApplyThemeLive(old)
-            end
-
-            track.InputBegan:Connect(function(i)
-                if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-                    sliding = true
-                    updateFromX(i.Position.X)
-                end
-            end)
-            Library:Connect(UserInputService.InputChanged, function(i)
-                if not sliding then return end
-                if i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch then
-                    updateFromX(i.Position.X)
-                end
-            end)
-            Library:Connect(UserInputService.InputEnded, function(i)
-                if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-                    sliding = false
-                end
-            end)
-
-            return function()
-                local c = Library.Theme[info.Key]
-                local r, g, b = c.R, c.G, c.B
-                -- refresh visuals from theme
-                local rel = (name == "R" and r) or (name == "G" and g) or b
-                fill.Size = UDim2.new(rel, 0, 1, 0)
-                valLbl.Text = tostring(math.floor(rel * 255 + 0.5))
-                swatch.BackgroundColor3 = c
             end
         end
 
-        local refreshR = makeChannel("R", 0, function() return Library.Theme[info.Key].R end, function(v)
-            local c = Library.Theme[info.Key]
-            Library.Theme[info.Key] = Color3.new(v, c.G, c.B)
+        local function syncFromTheme()
+            h, s, v = Library.Theme[info.Key]:ToHSV()
+            commitColor(false)
+        end
+
+        local draggingSV, draggingHue = false, false
+
+        local function updateSV(inputPos)
+            local abs = svFrame.AbsolutePosition
+            local size = svFrame.AbsoluteSize
+            if size.X <= 0 or size.Y <= 0 then return end
+            s = math.clamp((inputPos.X - abs.X) / size.X, 0, 1)
+            v = 1 - math.clamp((inputPos.Y - abs.Y) / size.Y, 0, 1)
+            commitColor(true)
+        end
+
+        local function updateHue(inputPos)
+            local abs = hueFrame.AbsolutePosition
+            local size = hueFrame.AbsoluteSize
+            if size.X <= 0 then return end
+            h = math.clamp((inputPos.X - abs.X) / size.X, 0, 1)
+            commitColor(true)
+        end
+
+        svFrame.InputBegan:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                draggingSV = true
+                updateSV(i.Position)
+            end
         end)
-        local refreshG = makeChannel("G", 26, function() return Library.Theme[info.Key].G end, function(v)
-            local c = Library.Theme[info.Key]
-            Library.Theme[info.Key] = Color3.new(c.R, v, c.B)
+        hueFrame.InputBegan:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                draggingHue = true
+                updateHue(i.Position)
+            end
         end)
-        local refreshB = makeChannel("B", 52, function() return Library.Theme[info.Key].B end, function(v)
-            local c = Library.Theme[info.Key]
-            Library.Theme[info.Key] = Color3.new(c.R, c.G, v)
+        Library:Connect(UserInputService.InputChanged, function(i)
+            if i.UserInputType ~= Enum.UserInputType.MouseMovement and i.UserInputType ~= Enum.UserInputType.Touch then
+                return
+            end
+            if draggingSV then updateSV(i.Position) end
+            if draggingHue then updateHue(i.Position) end
+        end)
+        Library:Connect(UserInputService.InputEnded, function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                draggingSV, draggingHue = false, false
+            end
         end)
 
         local expanded = false
         swatch.MouseButton1Click:Connect(function()
             expanded = not expanded
             editor.Visible = expanded
-            row.Size = expanded and UDim2.new(1, 0, 0, 124) or UDim2.new(1, 0, 0, 40)
+            row.Size = UDim2.new(1, 0, 0, expanded and ROW_EXPANDED or ROW_COLLAPSED)
             if expanded then
-                refreshR(); refreshG(); refreshB()
+                syncFromTheme()
             end
         end)
 
+        syncFromTheme()
         return row
     end
 
@@ -1018,7 +1144,7 @@ function Library:CreateWindow(config)
                 sw.BackgroundColor3 = Library.Theme[key]
             end
         end
-        Library:Notify({ Title = "Theme Reset", Content = "กลับค่าสีเริ่มต้นแล้ว", Duration = 2 })
+        Library:Notify({ Title = "Theme Reset", Content = "Restored default theme colors", Duration = 2 })
     end)
 
     local function setSettingsOpen(open)
