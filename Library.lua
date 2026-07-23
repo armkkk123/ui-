@@ -738,8 +738,24 @@ function Library:CreateWindow(config)
                     Parent           = TabPage,
                 })
 
+                if desc then
+                    Library:Create("TextLabel", {
+                        Size               = UDim2.new(1, -4, 0, 16),
+                        Position           = UDim2.new(0, 2, 0, 0),
+                        BackgroundTransparency = 1,
+                        Font               = Enum.Font.Gotham,
+                        TextSize           = 12,
+                        TextColor3         = Library.Theme.TextSub,
+                        Text               = desc,
+                        TextXAlignment     = Enum.TextXAlignment.Left,
+                        TextTruncate       = Enum.TextTruncate.AtEnd,
+                        Parent             = container,
+                    })
+                end
+
                 local btn = Library:Create("TextButton", {
-                    Size             = UDim2.new(1, 0, 1, 0),
+                    Size             = desc and UDim2.new(1, 0, 0, 36) or UDim2.new(1, 0, 1, 0),
+                    Position         = desc and UDim2.new(0, 0, 0, 18) or UDim2.new(0, 0, 0, 0),
                     BackgroundColor3 = Library.Theme.InputBg,
                     BorderSizePixel  = 0,
                     Font             = Enum.Font.GothamBold,
@@ -756,24 +772,10 @@ function Library:CreateWindow(config)
                     Parent = btn
                 })
 
-                if desc then
-                    btn.Size = UDim2.new(1, 0, 0, 36)
-                    Library:Create("TextLabel", {
-                        Size               = UDim2.new(1, -10, 0, 16),
-                        Position           = UDim2.new(0, 5, 0, 36),
-                        BackgroundTransparency = 1,
-                        Font               = Enum.Font.Gotham,
-                        TextSize           = 12,
-                        TextColor3         = Library.Theme.TextSub,
-                        Text               = desc,
-                        TextXAlignment     = Enum.TextXAlignment.Left,
-                        TextTruncate       = Enum.TextTruncate.AtEnd,
-                        Parent             = container,
-                    })
-                end
-
                 local btnNormalSize = desc and UDim2.new(1, 0, 0, 36) or UDim2.new(1, 0, 1, 0)
+                local btnNormalPos  = desc and UDim2.new(0, 0, 0, 18) or UDim2.new(0, 0, 0, 0)
                 local btnPressSize  = desc and UDim2.new(1, -4, 0, 34) or UDim2.new(1, -4, 1, -4)
+                local btnPressPos   = desc and UDim2.new(0, 2, 0, 19) or UDim2.new(0, 2, 0, 1)
 
                 btn.MouseEnter:Connect(function()
                     Library:Tween(btn, {BackgroundColor3 = Library.Theme.Success}, 0.15):Play()
@@ -784,10 +786,10 @@ function Library:CreateWindow(config)
                     Library:Tween(btnStroke, {Color = Library.Theme.Stroke}, 0.15):Play()
                 end)
                 btn.MouseButton1Down:Connect(function()
-                    Library:Tween(btn, {Size = btnPressSize, Position = UDim2.new(0, 2, 0, 1)}, 0.06):Play()
+                    Library:Tween(btn, {Size = btnPressSize, Position = btnPressPos}, 0.06):Play()
                 end)
                 btn.MouseButton1Up:Connect(function()
-                    Library:Tween(btn, {Size = btnNormalSize, Position = UDim2.new(0, 0, 0, 0)}, 0.1):Play()
+                    Library:Tween(btn, {Size = btnNormalSize, Position = btnNormalPos}, 0.1):Play()
                 end)
                 btn.MouseButton1Click:Connect(function() pcall(callback) end)
 
@@ -815,22 +817,10 @@ function Library:CreateWindow(config)
                 local containerStroke = Library:Create("UIStroke", {Color = Library.Theme.Stroke, Thickness = 1, Parent = container})
                 Library:AddCardHover(container, containerStroke)
 
-                Library:Create("TextLabel", {
-                    Size               = UDim2.new(1, -64, 0, 22),
-                    Position           = UDim2.new(0, 10, 0, desc and 4 or 6),
-                    BackgroundTransparency = 1,
-                    Font               = Enum.Font.GothamSemibold,
-                    TextSize           = 16,
-                    TextColor3         = Library.Theme.TextDim,
-                    Text               = labelText,
-                    TextXAlignment     = Enum.TextXAlignment.Left,
-                    Parent             = container,
-                })
-
                 if desc then
                     Library:Create("TextLabel", {
                         Size               = UDim2.new(1, -64, 0, 14),
-                        Position           = UDim2.new(0, 10, 0, 26),
+                        Position           = UDim2.new(0, 10, 0, 4),
                         BackgroundTransparency = 1,
                         Font               = Enum.Font.Gotham,
                         TextSize           = 12,
@@ -842,9 +832,21 @@ function Library:CreateWindow(config)
                     })
                 end
 
+                Library:Create("TextLabel", {
+                    Size               = UDim2.new(1, -64, 0, 22),
+                    Position           = UDim2.new(0, 10, 0, desc and 22 or 10),
+                    BackgroundTransparency = 1,
+                    Font               = Enum.Font.GothamSemibold,
+                    TextSize           = 16,
+                    TextColor3         = Library.Theme.TextDim,
+                    Text               = labelText,
+                    TextXAlignment     = Enum.TextXAlignment.Left,
+                    Parent             = container,
+                })
+
                 local switch = Library:Create("TextButton", {
                     Size             = UDim2.new(0, 44, 0, 22),
-                    Position         = UDim2.new(1, -52, 0.5, -11),
+                    Position         = UDim2.new(1, -52, 0, desc and 22 or 10),
                     BackgroundColor3 = default and Library.Theme.Accent or Library.Theme.ToggleOff,
                     Text             = "",
                     BorderSizePixel  = 0,
