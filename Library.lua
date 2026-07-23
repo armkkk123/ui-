@@ -337,14 +337,32 @@ function Library:CreateWindow(config)
     local windowTitle  = config.Title      or "Custom Hub"
     local toggleIcon   = config.ToggleIcon or "rbxassetid://101260008442128"
 
-    -- ขนาดหน้าต่างถูกล็อคตายตัวใน Library ไม่สามารถเปลี่ยนจากภายนอกได้
-    local vp           = workspace.CurrentCamera.ViewportSize
-    local targetWidth  = math.min(620, math.max(300, vp.X - 24))
-    local targetHeight = math.min(480, math.max(260, vp.Y - 24))
-    local finalSize    = UDim2.new(0, targetWidth, 0, targetHeight)
+    -- ขนาดหน้าต่างปรับอัตโนมัติตามขนาดหน้าจอ (มือถือ / แท็บเล็ต / คอม)
+    local vp = workspace.CurrentCamera.ViewportSize
+    local targetWidth, targetHeight
 
-    local startX       = math.max(10, (vp.X - targetWidth) / 2)
-    local startY       = math.max(10, (vp.Y - targetHeight) / 2)
+    if vp.X < 600 then
+        -- มือถือ portrait หรือหน้าจอเล็กมาก: เต็มเกือบจอ
+        targetWidth  = math.max(280, vp.X - 16)
+        targetHeight = math.max(240, vp.Y - 80)
+    elseif vp.X < 960 then
+        -- มือถือ landscape / แท็บเล็ต: 88% ของจอ
+        targetWidth  = math.floor(vp.X * 0.88)
+        targetHeight = math.floor(vp.Y * 0.85)
+    else
+        -- คอม / จอใหญ่: ขนาดที่กำหนดตายตัว ไม่ให้ใหญ่เกิน
+        targetWidth  = 620
+        targetHeight = 480
+    end
+
+    -- ป้องกันเกินขอบจอในทุกกรณี
+    targetWidth  = math.min(targetWidth,  vp.X - 16)
+    targetHeight = math.min(targetHeight, vp.Y - 16)
+
+    local finalSize = UDim2.new(0, targetWidth, 0, targetHeight)
+
+    local startX = math.max(8, (vp.X - targetWidth)  / 2)
+    local startY = math.max(8, (vp.Y - targetHeight) / 2)
 
     -- ── Floating Toggle Button (Hidden initially, visible when minimized) ──
     local openBtn = Library:Create("Frame", {
