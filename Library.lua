@@ -586,29 +586,17 @@ function Library:CreateWindow(config)
         return btn, setGlyphColor
     end
 
-    -- Settings: Roblox asset icon + soft glow (brighter than other chrome icons)
+    -- Settings: single Roblox asset icon (brighter, no duplicate glow layer)
     local SettingsBtn
-    local settingsIcon, settingsGlow
+    local settingsIcon
     SettingsBtn = makeChromeIconBtn(-88, function(btn, _color)
-        settingsGlow = Library:Create("ImageLabel", {
-            Name                   = "SettingsGlow",
-            Size                   = UDim2.new(0, 26, 0, 26),
-            Position               = UDim2.new(0.5, -13, 0.5, -13),
-            BackgroundTransparency = 1,
-            Image                  = "rbxassetid://108218465401763",
-            ImageColor3            = Color3.fromRGB(180, 230, 255),
-            ImageTransparency      = 0.55,
-            ScaleType              = Enum.ScaleType.Fit,
-            ZIndex                 = 4,
-            Parent                 = btn,
-        })
         settingsIcon = Library:Create("ImageLabel", {
             Name                   = "SettingsIcon",
             Size                   = UDim2.new(0, 20, 0, 20),
             Position               = UDim2.new(0.5, -10, 0.5, -10),
             BackgroundTransparency = 1,
             Image                  = "rbxassetid://108218465401763",
-            ImageColor3            = Color3.fromRGB(245, 250, 255),
+            ImageColor3            = Color3.fromRGB(235, 245, 255),
             ImageTransparency      = 0,
             ScaleType              = Enum.ScaleType.Fit,
             ZIndex                 = 5,
@@ -618,24 +606,19 @@ function Library:CreateWindow(config)
     end)
 
     local function setSettingsIconLook(mode)
-        if not settingsIcon or not settingsGlow then
+        if not settingsIcon then
             return
         end
         if mode == "open" then
             settingsIcon.ImageColor3 = Library.Theme.AccentHover
             settingsIcon.ImageTransparency = 0
-            settingsGlow.ImageColor3 = Library.Theme.Accent
-            settingsGlow.ImageTransparency = 0.35
         elseif mode == "hover" then
             settingsIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
             settingsIcon.ImageTransparency = 0
-            settingsGlow.ImageColor3 = Library.Theme.AccentHover
-            settingsGlow.ImageTransparency = 0.4
         else
-            settingsIcon.ImageColor3 = Color3.fromRGB(235, 245, 255)
+            -- idle: bright white-blue (not dim TextSub)
+            settingsIcon.ImageColor3 = Color3.fromRGB(230, 240, 255)
             settingsIcon.ImageTransparency = 0
-            settingsGlow.ImageColor3 = Color3.fromRGB(140, 210, 255)
-            settingsGlow.ImageTransparency = 0.5
         end
     end
 
