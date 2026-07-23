@@ -18,10 +18,31 @@ local CoreGui           = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
 -- ============================================================
+-- [1.5] RELOAD GUARD — ล้าง instance เก่าก่อนรันทับ (กันหน่วงสะสม)
+-- ============================================================
+local ENV_KEY = "__CustomGuiLib_v2"
+
+do
+    if typeof(getgenv) == "function" then
+        local prev = getgenv()[ENV_KEY]
+        if type(prev) == "table" then
+            pcall(function()
+                if prev.Destroy then
+                    prev:Destroy()
+                elseif prev.ScreenGui then
+                    prev.ScreenGui:Destroy()
+                end
+            end)
+        end
+        getgenv()[ENV_KEY] = nil
+    end
+end
+
+-- ============================================================
 -- [2] LIBRARY CORE & THEME
 -- ============================================================
 local Library = {
-    Version     = "2.1.0",
+    Version     = "2.1.1",
     Flags       = {},
     Elements    = {},
     Connections = {},
@@ -1856,16 +1877,42 @@ end -- CreateWindow
 -- [10] DESTROY / CLEANUP
 -- ============================================================
 function Library:Destroy()
+    if Library.Unloaded then
+        return
+    end
+    Library.Unloaded = true
+
     for _, conn in ipairs(Library.Connections) do
         pcall(function() conn:Disconnect() end)
     end
     Library.Connections = {}
+    Library.Flags = {}
+    Library.Elements = {}
 
     if Library.ScreenGui then
-        Library.ScreenGui:Destroy()
+        pcall(function() Library.ScreenGui:Destroy() end)
+        Library.ScreenGui = nil
     end
 
-    Library.Unloaded = true
+    -- ลบซ้ำเผื่อ parent เปลี่ยน / ชื่อชน
+    pcall(function()
+        local cg = CoreGui:FindFirstChild(UI_NAME)
+        if cg then cg:Destroy() end
+    end)
+    pcall(function()
+        if LocalPlayer and LocalPlayer:FindFirstChild("PlayerGui") then
+            local pg = LocalPlayer.PlayerGui:FindFirstChild(UI_NAME)
+            if pg then pg:Destroy() end
+        end
+    end)
+
+    if typeof(getgenv) == "function" and getgenv()[ENV_KEY] == Library then
+        getgenv()[ENV_KEY] = nil
+    end
+end
+
+if typeof(getgenv) == "function" then
+    getgenv()[ENV_KEY] = Library
 end
 
 return Library
