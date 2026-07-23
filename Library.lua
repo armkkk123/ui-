@@ -586,39 +586,35 @@ function Library:CreateWindow(config)
         return btn, setGlyphColor
     end
 
-    -- Settings: single Roblox asset icon (brighter, no duplicate glow layer)
-    local SettingsBtn
-    local settingsIcon
-    SettingsBtn = makeChromeIconBtn(-88, function(btn, _color)
-        settingsIcon = Library:Create("ImageLabel", {
-            Name                   = "SettingsIcon",
-            Size                   = UDim2.new(0, 20, 0, 20),
-            Position               = UDim2.new(0.5, -10, 0.5, -10),
-            BackgroundTransparency = 1,
-            Image                  = "rbxassetid://108218465401763",
-            ImageColor3            = Color3.fromRGB(235, 245, 255),
-            ImageTransparency      = 0,
-            ScaleType              = Enum.ScaleType.Fit,
-            ZIndex                 = 5,
-            Parent                 = btn,
-        })
-        return {}
-    end)
+    -- Settings: ONE ImageButton only (no glow / no nested duplicate image)
+    local SettingsBtn = Library:Create("ImageButton", {
+        Name                   = "SettingsBtn",
+        Size                   = UDim2.new(0, 28, 0, 28),
+        Position               = UDim2.new(1, -88, 0.5, -14),
+        BackgroundColor3       = Library.Theme.CardBg,
+        BackgroundTransparency = 1,
+        Image                  = "rbxassetid://108218465401763",
+        ImageColor3            = Color3.fromRGB(230, 240, 255),
+        ImageTransparency      = 0,
+        ScaleType              = Enum.ScaleType.Fit,
+        AutoButtonColor        = false,
+        ZIndex                 = 4,
+        Parent                 = TopBar,
+    })
+    Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = SettingsBtn})
 
     local function setSettingsIconLook(mode)
-        if not settingsIcon then
+        if not SettingsBtn or not SettingsBtn.Parent then
             return
         end
         if mode == "open" then
-            settingsIcon.ImageColor3 = Library.Theme.AccentHover
-            settingsIcon.ImageTransparency = 0
+            SettingsBtn.ImageColor3 = Library.Theme.AccentHover
         elseif mode == "hover" then
-            settingsIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
-            settingsIcon.ImageTransparency = 0
+            SettingsBtn.ImageColor3 = Color3.fromRGB(255, 255, 255)
+            Library:Tween(SettingsBtn, {BackgroundTransparency = 0.35}, 0.12):Play()
         else
-            -- idle: bright white-blue (not dim TextSub)
-            settingsIcon.ImageColor3 = Color3.fromRGB(230, 240, 255)
-            settingsIcon.ImageTransparency = 0
+            SettingsBtn.ImageColor3 = Color3.fromRGB(230, 240, 255)
+            Library:Tween(SettingsBtn, {BackgroundTransparency = 1}, 0.12):Play()
         end
     end
 
