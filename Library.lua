@@ -593,7 +593,7 @@ function Library:CreateWindow(config)
             Size                   = UDim2.new(0, 20, 0, 20),
             Position               = UDim2.new(0.5, -10, 0.5, -10),
             BackgroundTransparency = 1,
-            Image                  = "rbxassetid://109238147051717",
+            Image                  = "rbxassetid://126403418687382",
             ImageColor3            = color,
             ScaleType              = Enum.ScaleType.Fit,
             ZIndex                 = 5,
