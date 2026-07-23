@@ -546,19 +546,7 @@ function Library:CreateWindow(config)
         Parent             = TopBar,
     })
 
-    -- ── Settings Button (ไอคอนซ้ายของย่อหน้าต่าง) ──────────────
-    local SettingsBtn = Library:Create("ImageButton", {
-        Name                   = "SettingsBtn",
-        Size                   = UDim2.new(0, 22, 0, 22),
-        Position               = UDim2.new(1, -86, 0.5, -11),
-        BackgroundTransparency = 1,
-        Image                  = "rbxassetid://128130547397394",
-        ImageColor3            = Library.Theme.TextSub,
-        ZIndex                 = 4,
-        Parent                 = TopBar,
-    })
-
-    -- ── Window control icons (minimize / close) ───────────────
+    -- ── Window control icons (settings / minimize / close) ────
     local function makeChromeIconBtn(posX, makeGlyph)
         local btn = Library:Create("TextButton", {
             Size               = UDim2.new(0, 28, 0, 28),
@@ -572,13 +560,14 @@ function Library:CreateWindow(config)
         })
         Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = btn})
 
-        local iconColor = Library.Theme.TextSub
-        local glyphs = makeGlyph(btn, iconColor)
+        local glyphs = makeGlyph(btn, Library.Theme.TextSub)
 
         local function setGlyphColor(color)
             for _, g in ipairs(glyphs) do
                 if g:IsA("GuiObject") then
                     g.BackgroundColor3 = color
+                elseif g:IsA("UIStroke") then
+                    g.Color = color
                 end
             end
         end
@@ -589,11 +578,62 @@ function Library:CreateWindow(config)
         end)
         btn.MouseLeave:Connect(function()
             Library:Tween(btn, {BackgroundTransparency = 1}, 0.12):Play()
-            setGlyphColor(Library.Theme.TextSub)
+            if not (btn == SettingsBtn and Library.SettingsOpen) then
+                setGlyphColor(Library.Theme.TextSub)
+            else
+                setGlyphColor(Library.Theme.Accent)
+            end
         end)
 
         return btn, setGlyphColor
     end
+
+    -- Settings: modern gear (ring + hub + teeth)
+    local SettingsBtn, setSettingsGlyphColor
+    SettingsBtn, setSettingsGlyphColor = makeChromeIconBtn(-88, function(btn, color)
+        local parts = {}
+
+        -- 6 gear teeth
+        for i = 0, 5 do
+            local tooth = Library:Create("Frame", {
+                Size             = UDim2.new(0, 3.5, 0, 14),
+                Position         = UDim2.new(0.5, -1.75, 0.5, -7),
+                BackgroundColor3 = color,
+                BorderSizePixel  = 0,
+                Rotation         = i * 30,
+                ZIndex           = 5,
+                Parent           = btn,
+            })
+            Library:Create("UICorner", {CornerRadius = UDim.new(0, 1), Parent = tooth})
+            table.insert(parts, tooth)
+        end
+
+        -- Outer disc
+        local disc = Library:Create("Frame", {
+            Size             = UDim2.new(0, 12, 0, 12),
+            Position         = UDim2.new(0.5, -6, 0.5, -6),
+            BackgroundColor3 = color,
+            BorderSizePixel  = 0,
+            ZIndex           = 6,
+            Parent           = btn,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = disc})
+        table.insert(parts, disc)
+
+        -- Inner hole (matches TopBar so it looks hollow)
+        local hole = Library:Create("Frame", {
+            Size             = UDim2.new(0, 5, 0, 5),
+            Position         = UDim2.new(0.5, -2.5, 0.5, -2.5),
+            BackgroundColor3 = Library.Theme.TopBarBg,
+            BorderSizePixel  = 0,
+            ZIndex           = 7,
+            Parent           = btn,
+        })
+        Library:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = hole})
+        -- hole follows TopBar, not icon color — don't add to parts
+
+        return parts
+    end)
 
     -- Minimize: clean horizontal dash
     local MinBtn = makeChromeIconBtn(-58, function(btn, color)
@@ -659,12 +699,15 @@ function Library:CreateWindow(config)
         Library:Destroy()
     end)
 
+    -- Settings hover: accent when open / idle
     SettingsBtn.MouseEnter:Connect(function()
-        Library:Tween(SettingsBtn, {ImageColor3 = Library.Theme.Accent}, 0.15):Play()
+        setSettingsGlyphColor(Library.Theme.Accent)
     end)
     SettingsBtn.MouseLeave:Connect(function()
-        if not Library.SettingsOpen then
-            Library:Tween(SettingsBtn, {ImageColor3 = Library.Theme.TextSub}, 0.15):Play()
+        if Library.SettingsOpen then
+            setSettingsGlyphColor(Library.Theme.Accent)
+        else
+            setSettingsGlyphColor(Library.Theme.TextSub)
         end
     end)
 
@@ -1203,7 +1246,7 @@ function Library:CreateWindow(config)
     local function setSettingsOpen(open)
         Library.SettingsOpen = open
         SettingsPanel.Visible = open
-        SettingsBtn.ImageColor3 = open and Library.Theme.Accent or Library.Theme.TextSub
+        setSettingsGlyphColor(open and Library.Theme.Accent or Library.Theme.TextSub)
     end
 
     SettingsBtn.MouseButton1Click:Connect(function()
