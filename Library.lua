@@ -586,7 +586,9 @@ function Library:CreateWindow(config)
         return btn, setGlyphColor
     end
 
-    -- Settings: hitbox + ImageLabel (ImageButton alone often won't scale the asset reliably)
+    -- Settings: official Roblox gear (white silhouette) — tinted to match theme
+    -- Source: Roblox Creator Docs interactive UI tutorial
+    local SETTINGS_ICON = "rbxassetid://104919049969988"
     local SettingsBtn = Library:Create("TextButton", {
         Name                   = "SettingsBtn",
         Size                   = UDim2.new(0, 28, 0, 28),
@@ -597,16 +599,23 @@ function Library:CreateWindow(config)
         ZIndex                 = 4,
         Parent                 = TopBar,
     })
-    Library:Create("ImageLabel", {
+    local settingsIcon = Library:Create("ImageLabel", {
         Name                   = "Icon",
         Size                   = UDim2.new(0, 16, 0, 16),
         Position               = UDim2.new(0.5, -8, 0.5, -8),
         BackgroundTransparency = 1,
-        Image                  = "rbxassetid://108218465401763",
+        Image                  = SETTINGS_ICON,
+        ImageColor3            = Library.Theme.TextSub,
         ScaleType              = Enum.ScaleType.Fit,
         ZIndex                 = 5,
         Parent                 = SettingsBtn,
     })
+    SettingsBtn.MouseEnter:Connect(function()
+        settingsIcon.ImageColor3 = Library.Theme.Accent
+    end)
+    SettingsBtn.MouseLeave:Connect(function()
+        settingsIcon.ImageColor3 = Library.SettingsOpen and Library.Theme.Accent or Library.Theme.TextSub
+    end)
 
     -- Minimize: clean horizontal dash
     local MinBtn = makeChromeIconBtn(-58, function(btn, color)
@@ -1207,6 +1216,9 @@ function Library:CreateWindow(config)
     local function setSettingsOpen(open)
         Library.SettingsOpen = open
         SettingsPanel.Visible = open
+        if settingsIcon then
+            settingsIcon.ImageColor3 = open and Library.Theme.Accent or Library.Theme.TextSub
+        end
     end
 
     SettingsBtn.MouseButton1Click:Connect(function()
