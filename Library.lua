@@ -564,8 +564,10 @@ function Library:CreateWindow(config)
 
         local function setGlyphColor(color)
             for _, g in ipairs(glyphs) do
-                if g:IsA("GuiObject") then
+                if g:IsA("GuiObject") and not g:IsA("ImageLabel") and not g:IsA("ImageButton") then
                     g.BackgroundColor3 = color
+                elseif g:IsA("ImageLabel") or g:IsA("ImageButton") then
+                    g.ImageColor3 = color
                 elseif g:IsA("UIStroke") then
                     g.Color = color
                 end
@@ -578,61 +580,26 @@ function Library:CreateWindow(config)
         end)
         btn.MouseLeave:Connect(function()
             Library:Tween(btn, {BackgroundTransparency = 1}, 0.12):Play()
-            if not (btn == SettingsBtn and Library.SettingsOpen) then
-                setGlyphColor(Library.Theme.TextSub)
-            else
-                setGlyphColor(Library.Theme.Accent)
-            end
+            setGlyphColor(Library.Theme.TextSub)
         end)
 
         return btn, setGlyphColor
     end
 
-    -- Settings: modern gear (ring + hub + teeth)
+    -- Settings: Roblox asset icon (same hitbox size as other chrome buttons)
     local SettingsBtn, setSettingsGlyphColor
     SettingsBtn, setSettingsGlyphColor = makeChromeIconBtn(-88, function(btn, color)
-        local parts = {}
-
-        -- 6 gear teeth
-        for i = 0, 5 do
-            local tooth = Library:Create("Frame", {
-                Size             = UDim2.new(0, 3.5, 0, 14),
-                Position         = UDim2.new(0.5, -1.75, 0.5, -7),
-                BackgroundColor3 = color,
-                BorderSizePixel  = 0,
-                Rotation         = i * 30,
-                ZIndex           = 5,
-                Parent           = btn,
-            })
-            Library:Create("UICorner", {CornerRadius = UDim.new(0, 1), Parent = tooth})
-            table.insert(parts, tooth)
-        end
-
-        -- Outer disc
-        local disc = Library:Create("Frame", {
-            Size             = UDim2.new(0, 12, 0, 12),
-            Position         = UDim2.new(0.5, -6, 0.5, -6),
-            BackgroundColor3 = color,
-            BorderSizePixel  = 0,
-            ZIndex           = 6,
-            Parent           = btn,
+        local icon = Library:Create("ImageLabel", {
+            Size                   = UDim2.new(0, 20, 0, 20),
+            Position               = UDim2.new(0.5, -10, 0.5, -10),
+            BackgroundTransparency = 1,
+            Image                  = "rbxassetid://109238147051717",
+            ImageColor3            = color,
+            ScaleType              = Enum.ScaleType.Fit,
+            ZIndex                 = 5,
+            Parent                 = btn,
         })
-        Library:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = disc})
-        table.insert(parts, disc)
-
-        -- Inner hole (matches TopBar so it looks hollow)
-        local hole = Library:Create("Frame", {
-            Size             = UDim2.new(0, 5, 0, 5),
-            Position         = UDim2.new(0.5, -2.5, 0.5, -2.5),
-            BackgroundColor3 = Library.Theme.TopBarBg,
-            BorderSizePixel  = 0,
-            ZIndex           = 7,
-            Parent           = btn,
-        })
-        Library:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = hole})
-        -- hole follows TopBar, not icon color — don't add to parts
-
-        return parts
+        return { icon }
     end)
 
     -- Minimize: clean horizontal dash
