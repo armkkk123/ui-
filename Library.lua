@@ -586,17 +586,26 @@ function Library:CreateWindow(config)
         return btn, setGlyphColor
     end
 
-    -- Settings: plain icon only (slightly smaller than min/close)
-    local SettingsBtn = Library:Create("ImageButton", {
+    -- Settings: hitbox + ImageLabel (ImageButton alone often won't scale the asset reliably)
+    local SettingsBtn = Library:Create("TextButton", {
         Name                   = "SettingsBtn",
-        Size                   = UDim2.new(0, 20, 0, 20),
-        Position               = UDim2.new(1, -84, 0.5, -10),
+        Size                   = UDim2.new(0, 28, 0, 28),
+        Position               = UDim2.new(1, -88, 0.5, -14),
         BackgroundTransparency = 1,
-        Image                  = "rbxassetid://108218465401763",
-        ScaleType              = Enum.ScaleType.Fit,
+        Text                   = "",
         AutoButtonColor        = false,
         ZIndex                 = 4,
         Parent                 = TopBar,
+    })
+    Library:Create("ImageLabel", {
+        Name                   = "Icon",
+        Size                   = UDim2.new(0, 16, 0, 16),
+        Position               = UDim2.new(0.5, -8, 0.5, -8),
+        BackgroundTransparency = 1,
+        Image                  = "rbxassetid://108218465401763",
+        ScaleType              = Enum.ScaleType.Fit,
+        ZIndex                 = 5,
+        Parent                 = SettingsBtn,
     })
 
     -- Minimize: clean horizontal dash
