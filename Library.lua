@@ -1988,6 +1988,7 @@ function Library:CreateWindow(config)
                     Size             = UDim2.new(1, 0, 0, 42),
                     BackgroundColor3 = Library.Theme.CardBg,
                     BorderSizePixel  = 0,
+                    ClipsDescendants = true,
                     Parent           = TabPage,
                 })
                 Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = container})
@@ -1995,7 +1996,7 @@ function Library:CreateWindow(config)
                 Library:AddCardHover(container, containerStroke)
 
                 Library:Create("TextLabel", {
-                    Size               = UDim2.new(0.45, 0, 1, 0),
+                    Size               = UDim2.new(0, 110, 1, 0),
                     Position           = UDim2.new(0, 10, 0, 0),
                     BackgroundTransparency = 1,
                     Font               = Enum.Font.GothamSemibold,
@@ -2003,31 +2004,49 @@ function Library:CreateWindow(config)
                     TextColor3         = Library.Theme.TextDim,
                     Text               = labelText,
                     TextXAlignment     = Enum.TextXAlignment.Left,
+                    TextTruncate       = Enum.TextTruncate.AtEnd,
                     Parent             = container,
                 })
 
+                -- กล่องคลิปข้อความยาว (กันล้นทับ label)
+                local boxWrap = Library:Create("Frame", {
+                    Size             = UDim2.new(1, -130, 0, 26),
+                    Position         = UDim2.new(0, 122, 0.5, -13),
+                    BackgroundColor3 = Library.Theme.InputBg,
+                    BorderSizePixel  = 0,
+                    ClipsDescendants = true,
+                    Parent           = container,
+                })
+                Library:Create("UICorner", {CornerRadius = UDim.new(0, 5), Parent = boxWrap})
                 local inputStroke = Library:Create("UIStroke", {
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                    Color = Library.Theme.Stroke, 
-                    Thickness = 1
+                    Color           = Library.Theme.Stroke,
+                    Thickness       = 1,
+                    Parent          = boxWrap,
                 })
 
                 local box = Library:Create("TextBox", {
-                    Size                   = UDim2.new(0.5, -4, 0, 24),
-                    Position               = UDim2.new(0.5, 0, 0.5, -12),
-                    BackgroundColor3       = Library.Theme.InputBg,
+                    Size                   = UDim2.new(1, 0, 1, 0),
+                    BackgroundTransparency = 1,
                     BorderSizePixel        = 0,
                     Font                   = Enum.Font.Gotham,
-                    TextSize           = 13,
+                    TextSize               = 13,
                     TextColor3             = Library.Theme.Text,
                     PlaceholderColor3      = Color3.fromRGB(90, 90, 100),
                     PlaceholderText        = placeholder,
                     Text                   = tostring(default),
                     ClearTextOnFocus       = false,
-                    Parent                 = container,
+                    TextXAlignment         = Enum.TextXAlignment.Left,
+                    TextYAlignment         = Enum.TextYAlignment.Center,
+                    TextTruncate           = Enum.TextTruncate.AtEnd,
+                    ClipsDescendants       = true,
+                    Parent                 = boxWrap,
                 })
-                Library:Create("UICorner", {CornerRadius = UDim.new(0, 5), Parent = box})
-                inputStroke.Parent = box
+                Library:Create("UIPadding", {
+                    PaddingLeft  = UDim.new(0, 8),
+                    PaddingRight = UDim.new(0, 8),
+                    Parent       = box,
+                })
 
                 if numeric then
                     box:GetPropertyChangedSignal("Text"):Connect(function()
