@@ -586,46 +586,18 @@ function Library:CreateWindow(config)
         return btn, setGlyphColor
     end
 
-    -- Settings: ONE ImageButton only (no glow / no nested duplicate image)
+    -- Settings: plain icon only
     local SettingsBtn = Library:Create("ImageButton", {
         Name                   = "SettingsBtn",
         Size                   = UDim2.new(0, 28, 0, 28),
         Position               = UDim2.new(1, -88, 0.5, -14),
-        BackgroundColor3       = Library.Theme.CardBg,
         BackgroundTransparency = 1,
         Image                  = "rbxassetid://108218465401763",
-        ImageColor3            = Color3.fromRGB(230, 240, 255),
-        ImageTransparency      = 0,
         ScaleType              = Enum.ScaleType.Fit,
         AutoButtonColor        = false,
         ZIndex                 = 4,
         Parent                 = TopBar,
     })
-    Library:Create("UICorner", {CornerRadius = UDim.new(0, 7), Parent = SettingsBtn})
-
-    local function setSettingsIconLook(mode)
-        if not SettingsBtn or not SettingsBtn.Parent then
-            return
-        end
-        if mode == "open" then
-            SettingsBtn.ImageColor3 = Library.Theme.AccentHover
-        elseif mode == "hover" then
-            SettingsBtn.ImageColor3 = Color3.fromRGB(255, 255, 255)
-            Library:Tween(SettingsBtn, {BackgroundTransparency = 0.35}, 0.12):Play()
-        else
-            SettingsBtn.ImageColor3 = Color3.fromRGB(230, 240, 255)
-            Library:Tween(SettingsBtn, {BackgroundTransparency = 1}, 0.12):Play()
-        end
-    end
-
-    setSettingsIconLook("idle")
-
-    SettingsBtn.MouseEnter:Connect(function()
-        setSettingsIconLook(Library.SettingsOpen and "open" or "hover")
-    end)
-    SettingsBtn.MouseLeave:Connect(function()
-        setSettingsIconLook(Library.SettingsOpen and "open" or "idle")
-    end)
 
     -- Minimize: clean horizontal dash
     local MinBtn = makeChromeIconBtn(-58, function(btn, color)
@@ -1226,7 +1198,6 @@ function Library:CreateWindow(config)
     local function setSettingsOpen(open)
         Library.SettingsOpen = open
         SettingsPanel.Visible = open
-        setSettingsIconLook(open and "open" or "idle")
     end
 
     SettingsBtn.MouseButton1Click:Connect(function()
